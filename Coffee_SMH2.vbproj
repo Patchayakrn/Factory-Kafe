@@ -1,0 +1,790 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2A88D3C8-B628-4D21-A62B-F63721E2D63E}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <StartupObject>Coffee_SMH2.My.MyApplication</StartupObject>
+    <RootNamespace>Coffee_SMH2</RootNamespace>
+    <AssemblyName>Coffee_SMH2</AssemblyName>
+    <AppConfig>App.config</AppConfig>
+    <FileAlignment>512</FileAlignment>
+    <MyType>WindowsForms</MyType>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>D:\SMH_Program\Coffee_SMH2_NoDevExpress\Coffee_Setup_NoDevExpress\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>6</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <DefineDebug>true</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DocumentationFile>Coffee_SMH2.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <DefineDebug>false</DefineDebug>
+    <DefineTrace>true</DefineTrace>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DocumentationFile>Coffee_SMH2.xml</DocumentationFile>
+    <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionExplicit>On</OptionExplicit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionCompare>Binary</OptionCompare>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionStrict>Off</OptionStrict>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OptionInfer>On</OptionInfer>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>9849C6C0AE17B270E1824D456EEBEBC1583B6F07</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Coffee_SMH2_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>false</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetZone>LocalIntranet</TargetZone>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Report\fReportStock.Designer.vb">
+      <DependentUpon>fReportStock.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Report\fReportStock.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="Krypton.Toolkit, Version=105.26.7.201, Culture=neutral, PublicKeyToken=a87e673e9ecb6e8e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Krypton.Toolkit.105.26.7.201\lib\net48\Krypton.Toolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Bcl.HashCode, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Bcl.HashCode.1.1.1\lib\net461\Microsoft.Bcl.HashCode.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Common, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Design, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.Design.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WinForms, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.Winforms.150.1652.0\lib\net40\Microsoft.ReportViewer.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="QRCoder, Version=1.7.0.0, Culture=neutral, PublicKeyToken=c4ed5b9ae8358a28, processorArchitecture=MSIL">
+      <HintPath>..\packages\QRCoder.1.7.0\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Buffers.4.6.1\lib\net462\System.Buffers.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=9.0.0.10, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.9.0.10\lib\net462\System.Collections.Immutable.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Formats.Nrbf, Version=9.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Formats.Nrbf.9.0.10\lib\net462\System.Formats.Nrbf.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Memory.4.6.3\lib\net462\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Numerics.Vectors.4.6.1\lib\net462\System.Numerics.Vectors.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Reflection.Metadata, Version=9.0.0.10, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reflection.Metadata.9.0.10\lib\net462\System.Reflection.Metadata.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Resources.Extensions, Version=9.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Resources.Extensions.9.0.10\lib\net462\System.Resources.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Text.Encoding.CodePages, Version=10.0.0.5, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Text.Encoding.CodePages.10.0.5\lib\net462\System.Text.Encoding.CodePages.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="UIAutomationClient" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Import Include="Microsoft.VisualBasic" />
+    <Import Include="System" />
+    <Import Include="System.Collections" />
+    <Import Include="System.Collections.Generic" />
+    <Import Include="System.Data" />
+    <Import Include="System.Drawing" />
+    <Import Include="System.Diagnostics" />
+    <Import Include="System.Windows.Forms" />
+    <Import Include="System.Linq" />
+    <Import Include="System.Xml.Linq" />
+    <Import Include="System.Threading.Tasks" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Buy\fsupplier.Designer.vb">
+      <DependentUpon>fsupplier.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Buy\fsupplier.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Buy\frmBuy.Designer.vb">
+      <DependentUpon>frmBuy.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Buy\frmBuy.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Buy\frmBuyHistory.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\Fmailvb.Designer.vb">
+      <DependentUpon>Fmailvb.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Main\Fmailvb.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Officer\fOfficer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Officer\fOfficer.Designer.vb">
+      <DependentUpon>fOfficer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Officer\fOfficerAddEdit.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Officer\fOfficerAddEdit.Designer.vb">
+      <DependentUpon>fOfficerAddEdit.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Officer\fAccessLevel.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Officer\fOfficerLimitSearch.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Officer\fSetUserNamePassword.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ResponsiveLayout.vb" />
+    <Compile Include="LargeAlertForm.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ImageAssetStore.vb" />
+    <Compile Include="DrinkMenuCard.Designer.vb">
+      <DependentUpon>DrinkMenuCard.vb</DependentUpon>
+    </Compile>
+    <Compile Include="DrinkMenuCard.vb">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Compatibility\WinFormsDevExpressCompat.vb" />
+    <Compile Include="Class\clsSQLQuery.vb" />
+    <Compile Include="Class\RawPrinterHelper.vb" />
+    <Compile Include="Customer\fCustomer.Designer.vb">
+      <DependentUpon>fCustomer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Customer\fCustomer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Customer\fCustomerFreeCupHistory.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Customer\fCustomerFreeCupHistory.Designer.vb">
+      <DependentUpon>fCustomerFreeCupHistory.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Customer\fCustomerBarcode.Designer.vb">
+      <DependentUpon>fCustomerBarcode.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Customer\fCustomerBarcode.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.vb">
+      <DependentUpon>Form1.vb</DependentUpon>
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Main\XfrmLogin.Designer.vb">
+      <DependentUpon>XfrmLogin.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Main\XfrmLogin.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Modual\ModSession.vb" />
+    <Compile Include="Modual\DbSchemaChecker.vb" />
+    <Compile Include="Modual\DatabaseBackup.vb" />
+    <Compile Include="Modual\modVariable.vb" />
+    <Compile Include="Modual\Security.vb" />
+    <Compile Include="Modual\PermissionService.vb" />
+    <Compile Include="Modual\CustomerFreeCupBalance.vb" />
+    <Compile Include="My Project\AssemblyInfo.vb" />
+    <Compile Include="My Project\Application.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Application.myapp</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <Compile Include="My Project\Resources.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="My Project\Settings.Designer.vb">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <Compile Include="Product\fProduct.Designer.vb">
+      <DependentUpon>fProduct.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\fProduct.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\fStock.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\fStock.Designer.vb">
+      <DependentUpon>fStock.vb</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Product\frmMaterialStock.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\frmMaterialIssue.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\frmMaterialReceive.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\frmMaterialDrinkAdd.Designer.vb">
+      <DependentUpon>frmMaterialDrinkAdd.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\frmMaterialDrinkAdd.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\frmMaterialStock.Designer.vb">
+      <DependentUpon>frmMaterialStock.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\fInventoryCount.Designer.vb">
+      <DependentUpon>fInventoryCount.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\fInventoryCount.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\FrmProductAdd.Designer.vb">
+      <DependentUpon>FrmProductAdd.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\FrmProductAdd.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\frmCategory.Designer.vb">
+      <DependentUpon>frmCategory.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\frmCategory.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\frmProductGroup.Designer.vb">
+      <DependentUpon>frmProductGroup.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\frmProductGroup.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\frmReportViewer.Designer.vb">
+      <DependentUpon>frmReportViewer.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\frmReportViewer.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmFrozenShopIssue.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmFrozenShopIssue.Designer.vb">
+      <DependentUpon>frmFrozenShopIssue.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmFrozenShopIssueHistory.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmFrozenShopIssueHistory.Designer.vb">
+      <DependentUpon>frmFrozenShopIssueHistory.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoEmployeeHoliday.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmMemoEmployeeHoliday.Designer.vb">
+      <DependentUpon>frmMemoEmployeeHoliday.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoPromotion.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmMemoPromotion.Designer.vb">
+      <DependentUpon>frmMemoPromotion.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoEmployeeHolidayHistory.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmMemoEmployeeHolidayHistory.Designer.vb">
+      <DependentUpon>frmMemoEmployeeHolidayHistory.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoPromotionHistory.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmMemoPromotionHistory.Designer.vb">
+      <DependentUpon>frmMemoPromotionHistory.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoDrinkPriceApproval.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmMemoDrinkPriceApproval.Designer.vb">
+      <DependentUpon>frmMemoDrinkPriceApproval.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoDrinkPriceApprovalHistory.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmMemoDrinkPriceApprovalHistory.Designer.vb">
+      <DependentUpon>frmMemoDrinkPriceApprovalHistory.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoProductPriceApproval.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmMemoProductPriceApproval.Designer.vb">
+      <DependentUpon>frmMemoProductPriceApproval.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoProductPriceApprovalHistory.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmMemoProductPriceApprovalHistory.Designer.vb">
+      <DependentUpon>frmMemoProductPriceApprovalHistory.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoProductFormula.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmBeverageBom.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmBeverageBom.Designer.vb">
+      <DependentUpon>frmBeverageBom.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmBeverageProduct.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmBeverageProduct.Designer.vb">
+      <DependentUpon>frmBeverageProduct.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmBeverageProductAdd.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Memo\frmBeverageProductAdd.Designer.vb">
+      <DependentUpon>frmBeverageProductAdd.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Memo\frmMemoProductFormula.Designer.vb">
+      <DependentUpon>frmMemoProductFormula.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Report\frmDailySales.Designer.vb">
+      <DependentUpon>frmDailySales.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Report\frmDailySales.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\frmVatBuy.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\frmVatSell.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\frmVatSell.Designer.vb">
+      <DependentUpon>frmVatSell.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Report\frmSellBillEdit.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\frmSellBillEdit.Designer.vb">
+      <DependentUpon>frmSellBillEdit.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Report\fReportSellByProductGroup.Designer.vb">
+      <DependentUpon>fReportSellByProductGroup.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Report\fReportSellByProductGroup.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Report\StandardReports.vb" />
+    <None Include="Report\rptDailySales.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptSellByProductGroup.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptBuyInvoice.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptBuyMonthly.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptVatSell.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptVatSellMonthly.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptFrozenShopIssue.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptMaterialIssue.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptMaterialReceive.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptEmployeeHolidayMemo.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptMemoPromotion.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptMemoDrinkPriceApproval.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptMemoProductPriceApproval.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptInventoryCount.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <EmbeddedResource Include="Product\frmMaterialDrinkAdd.resx">
+      <DependentUpon>frmMaterialDrinkAdd.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\frmMaterialIssue.resx">
+      <DependentUpon>frmMaterialIssue.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\frmMaterialReceive.resx">
+      <DependentUpon>frmMaterialReceive.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\frmMaterialUsage.resx">
+      <DependentUpon>frmMaterialUsage.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\rptStockMovementMonthly.rdlc">
+      <LogicalName>Coffee_SMH2.Report.rptStockMovementMonthly.rdlc</LogicalName>
+    </EmbeddedResource>
+    <Compile Include="Sell\fQRPayment.Designer.vb">
+      <DependentUpon>fQRPayment.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\fQRPayment.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sell\fReceiveMoney.Designer.vb">
+      <DependentUpon>fReceiveMoney.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\fReceiveMoney.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sell\FrmBeverageOption.Designer.vb">
+      <DependentUpon>FrmBeverageOption.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\FrmBeverageOption.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sell\FrmFreeCupSelect.Designer.vb">
+      <DependentUpon>FrmFreeCupSelect.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\FrmFreeCupSelect.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sell\FreeCupSelectionItem.vb" />
+    <Compile Include="Sell\frmCashReceive.Designer.vb">
+      <DependentUpon>frmCashReceive.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\frmCashReceive.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sell\frmCustomerDisplay.Designer.vb">
+      <DependentUpon>frmCustomerDisplay.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\frmCustomerDisplay.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sell\frmPromotion.Designer.vb">
+      <DependentUpon>frmPromotion.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\frmPromotion.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sell\frmReceiptPreview.Designer.vb">
+      <DependentUpon>frmReceiptPreview.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\frmReceiptPreview.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Sell\fsell.Designer.vb">
+      <DependentUpon>fsell.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Sell\fsell.vb">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Buy\frmBuy.resx">
+      <DependentUpon>frmBuy.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Buy\frmBuyHistory.resx">
+      <DependentUpon>frmBuyHistory.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Buy\fsupplier.resx">
+      <DependentUpon>fsupplier.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Customer\fCustomer.resx">
+      <DependentUpon>fCustomer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Customer\fCustomerBarcode.resx">
+      <DependentUpon>fCustomerBarcode.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Customer\fCustomerFreeCupHistory.resx">
+      <DependentUpon>fCustomerFreeCupHistory.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\Fmailvb.resx">
+      <DependentUpon>Fmailvb.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Main\XfrmLogin.resx">
+      <DependentUpon>XfrmLogin.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmBeverageBom.resx">
+      <DependentUpon>frmBeverageBom.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmBeverageProduct.resx">
+      <DependentUpon>frmBeverageProduct.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmFrozenShopIssueHistory.resx">
+      <DependentUpon>frmFrozenShopIssueHistory.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmMemoEmployeeHoliday.resx">
+      <DependentUpon>frmMemoEmployeeHoliday.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmMemoPromotion.resx">
+      <DependentUpon>frmMemoPromotion.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmMemoDrinkPriceApproval.resx">
+      <DependentUpon>frmMemoDrinkPriceApproval.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmMemoProductPriceApproval.resx">
+      <DependentUpon>frmMemoProductPriceApproval.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmMemoProductFormula.resx">
+      <DependentUpon>frmMemoProductFormula.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="My Project\Resources.resx">
+      <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.vb</LastGenOutput>
+      <CustomToolNamespace>My.Resources</CustomToolNamespace>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Officer\fOfficer.resx">
+      <DependentUpon>fOfficer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Officer\fOfficerAddEdit.resx">
+      <DependentUpon>fOfficerAddEdit.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\fInventoryCount.resx">
+      <DependentUpon>fInventoryCount.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\fProduct.resx">
+      <DependentUpon>fProduct.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\FrmProductAdd.resx">
+      <DependentUpon>FrmProductAdd.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\frmCategory.resx">
+      <DependentUpon>frmCategory.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\frmProductGroup.resx">
+      <DependentUpon>frmProductGroup.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Product\frmReportViewer.resx">
+      <DependentUpon>frmReportViewer.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\fReportSellByProductGroup.resx">
+      <DependentUpon>fReportSellByProductGroup.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\fReportStock.resx">
+      <DependentUpon>fReportStock.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\frmDailySales.resx">
+      <DependentUpon>frmDailySales.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\frmSellBillEdit.resx">
+      <DependentUpon>frmSellBillEdit.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\frmVatBuy.resx">
+      <DependentUpon>frmVatBuy.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Report\frmVatSell.resx">
+      <DependentUpon>frmVatSell.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\fQRPayment.resx">
+      <DependentUpon>fQRPayment.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\fReceiveMoney.resx">
+      <DependentUpon>fReceiveMoney.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\FrmBeverageOption.resx">
+      <DependentUpon>FrmBeverageOption.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\frmCashReceive.resx">
+      <DependentUpon>frmCashReceive.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\frmCustomerDisplay.resx">
+      <DependentUpon>frmCustomerDisplay.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\FrmFreeCupSelect.resx">
+      <DependentUpon>FrmFreeCupSelect.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\frmPromotion.resx">
+      <DependentUpon>frmPromotion.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\frmReceiptPreview.resx">
+      <DependentUpon>frmReceiptPreview.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Sell\fsell.resx">
+      <DependentUpon>fsell.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DrinkMenuCard.resx">
+      <DependentUpon>DrinkMenuCard.vb</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Memo\frmFrozenShopIssue.resx">
+      <DependentUpon>frmFrozenShopIssue.vb</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Coffee_SMH2_TemporaryKey.pfx" />
+    <None Include="My Project\app.manifest" />
+    <None Include="My Project\Application.myapp">
+      <Generator>MyApplicationCodeGenerator</Generator>
+      <LastGenOutput>Application.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="My Project\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <CustomToolNamespace>My</CustomToolNamespace>
+      <LastGenOutput>Settings.Designer.vb</LastGenOutput>
+    </None>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+    <None Include="OfficerLegacyPort\fConfirmOfficerBarcode.vb" />
+    <None Include="OfficerLegacyPort\fOfficer.vb" />
+    <None Include="OfficerLegacyPort\fOfficerAddEdit.vb" />
+    <None Include="OfficerLegacyPort\fOfficerSetLimitSearch.vb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Product\frmMaterialUsage.vb">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Product\frmMaterialUsage.Designer.vb">
+      <DependentUpon>frmMaterialUsage.vb</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Coffee_SMH2_Assets.zip" />
+    <None Include="Resources\Image1.bmp" />
+    <None Include="Resources\Add Customer.png" />
+    <Content Include="Menu\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CustomerAds\**\*.*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CustomerAds\Image\bank_qr.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CustomerAds\Image\QRCode_pay.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\Loader.cs" />
+    <Content Include="SqlServerTypes\readme.htm" />
+    <Content Include="SqlServerTypes\x64\msvcr120.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x64\SqlServerSpatial140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x86\msvcr120.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x86\SqlServerSpatial140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.8">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.8 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <Import Project="..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
+  </Target>
+</Project>

@@ -1,0 +1,844 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="dsMaterialReceiveSource">
+      <ConnectionProperties>
+        <DataProvider>System.Data.DataSet</DataProvider>
+        <ConnectString>/* Local DataSet */</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>8b4e4a96-7a8d-46e7-b1c8-0e2363f8b2d1</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="dsMaterialReceive">
+      <Query>
+        <DataSourceName>dsMaterialReceiveSource</DataSourceName>
+        <CommandText>/* Local DataTable */</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="CompanyName">
+          <DataField>CompanyName</DataField>
+        </Field>
+        <Field Name="DocNo">
+          <DataField>DocNo</DataField>
+        </Field>
+        <Field Name="ReceiveDateText">
+          <DataField>ReceiveDateText</DataField>
+        </Field>
+        <Field Name="PO">
+          <DataField>PO</DataField>
+        </Field>
+        <Field Name="PR">
+          <DataField>PR</DataField>
+        </Field>
+        <Field Name="Supplier">
+          <DataField>Supplier</DataField>
+        </Field>
+        <Field Name="Remark">
+          <DataField>Remark</DataField>
+        </Field>
+        <Field Name="LineNo">
+          <DataField>LineNo</DataField>
+        </Field>
+        <Field Name="MaterialID">
+          <DataField>MaterialID</DataField>
+        </Field>
+        <Field Name="ItemText">
+          <DataField>ItemText</DataField>
+        </Field>
+        <Field Name="Quantity">
+          <DataField>Quantity</DataField>
+        </Field>
+        <Field Name="UnitUse">
+          <DataField>UnitUse</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Textbox Name="txtLogo">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value EvaluationMode="Constant" />
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>20pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                      <Color>#c00000</Color>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.08in</Top>
+            <Left>0.1in</Left>
+            <Height>1.02in</Height>
+            <Width>1.05in</Width>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Textbox Name="txtTitle">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>ใบรับสินค้า</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>27pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.08in</Top>
+            <Left>1.15in</Left>
+            <Height>0.44in</Height>
+            <Width>3.1in</Width>
+            <ZIndex>1</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <TopBorder>
+                <Style>Solid</Style>
+              </TopBorder>
+              <BottomBorder>
+                <Style>None</Style>
+              </BottomBorder>
+              <LeftBorder>
+                <Style>Solid</Style>
+              </LeftBorder>
+              <RightBorder>
+                <Style>Solid</Style>
+              </RightBorder>
+              <VerticalAlign>Middle</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Textbox Name="txtCompany">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>=First(Fields!CompanyName.Value, "dsMaterialReceive")</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>18pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.52in</Top>
+            <Left>1.15in</Left>
+            <Height>0.58in</Height>
+            <Width>3.1in</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <TopBorder>
+                <Style>None</Style>
+              </TopBorder>
+              <BottomBorder>
+                <Style>Solid</Style>
+              </BottomBorder>
+              <LeftBorder>
+                <Style>Solid</Style>
+              </LeftBorder>
+              <RightBorder>
+                <Style>Solid</Style>
+              </RightBorder>
+              <VerticalAlign>Middle</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Textbox Name="txtDocNo">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="เลขที่  " &amp; First(Fields!DocNo.Value, "dsMaterialReceive")</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>15pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.08in</Top>
+            <Left>4.25in</Left>
+            <Height>0.34in</Height>
+            <Width>1.8in</Width>
+            <ZIndex>3</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Textbox Name="txtReceiveDate">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="วันที่  " &amp; First(Fields!ReceiveDateText.Value, "dsMaterialReceive")</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.08in</Top>
+            <Left>6.05in</Left>
+            <Height>0.34in</Height>
+            <Width>1.75in</Width>
+            <ZIndex>4</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Textbox Name="txtPO">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="PO    " &amp; First(Fields!PO.Value, "dsMaterialReceive")</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>14pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.42in</Top>
+            <Left>4.25in</Left>
+            <Height>0.34in</Height>
+            <Width>1.8in</Width>
+            <ZIndex>5</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>0.1in</PaddingLeft>
+            </Style>
+          </Textbox>
+          <Textbox Name="txtPR">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="PR    " &amp; First(Fields!PR.Value, "dsMaterialReceive")</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>14pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.42in</Top>
+            <Left>6.05in</Left>
+            <Height>0.34in</Height>
+            <Width>1.75in</Width>
+            <ZIndex>6</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>0.1in</PaddingLeft>
+            </Style>
+          </Textbox>
+          <Textbox Name="txtSupplier">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>="Supplier    " &amp; First(Fields!Supplier.Value, "dsMaterialReceive")</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>14pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Left</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.76in</Top>
+            <Left>4.25in</Left>
+            <Height>0.34in</Height>
+            <Width>3.55in</Width>
+            <ZIndex>7</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Middle</VerticalAlign>
+              <PaddingLeft>0.1in</PaddingLeft>
+            </Style>
+          </Textbox>
+          <Textbox Name="sigSender">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>ผู้ส่ง</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>7.45in</Top>
+            <Left>0.1in</Left>
+            <Height>0.65in</Height>
+            <Width>1.9in</Width>
+            <ZIndex>8</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Top</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Textbox Name="sigReceiver">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>ผู้รับ</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>7.45in</Top>
+            <Left>2in</Left>
+            <Height>0.65in</Height>
+            <Width>1.9in</Width>
+            <ZIndex>9</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Top</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Textbox Name="sigQC">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>QC</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>7.45in</Top>
+            <Left>3.9in</Left>
+            <Height>0.65in</Height>
+            <Width>1.9in</Width>
+            <ZIndex>10</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Top</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Textbox Name="sigAccounting">
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>บัญชี</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>14pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>7.45in</Top>
+            <Left>5.8in</Left>
+            <Height>0.65in</Height>
+            <Width>2in</Width>
+            <ZIndex>11</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+              <VerticalAlign>Top</VerticalAlign>
+            </Style>
+          </Textbox>
+          <Tablix Name="tblReceiveItems">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>0.42in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.82in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>4.98in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.82in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.66in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.3in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hNo">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>ลำดับ</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hCode">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>รหัสสินค้า</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hItem">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>รายการ</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hQty">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>จำนวน</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="hUnit">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>หน่วย</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.28in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dNo">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!LineNo.Value</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dCode">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!MaterialID.Value</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dItem">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!ItemText.Value</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dQty">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Format(Fields!Quantity.Value, "#,##0.##")</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="dUnit">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!UnitUse.Value</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>11pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>Solid</Style>
+                            </Border>
+                            <VerticalAlign>Middle</VerticalAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="Details" />
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>dsMaterialReceive</DataSetName>
+            <Top>1.16944in</Top>
+            <Left>0.1in</Left>
+            <Height>0.58in</Height>
+            <Width>7.7in</Width>
+            <ZIndex>12</ZIndex>
+            <Style />
+          </Tablix>
+          <Image Name="Image2">
+            <Source>Embedded</Source>
+            <Value>ID1210202641344PM</Value>
+            <Sizing>FitProportional</Sizing>
+            <Top>0.18in</Top>
+            <Left>0.20833in</Left>
+            <Height>0.78056in</Height>
+            <Width>0.87222in</Width>
+            <ZIndex>13</ZIndex>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Image>
+        </ReportItems>
+        <Height>8.35in</Height>
+        <Style />
+      </Body>
+      <Width>7.9in</Width>
+      <Page>
+        <PageHeight>11.69in</PageHeight>
+        <PageWidth>8.27in</PageWidth>
+        <LeftMargin>0.18in</LeftMargin>
+        <RightMargin>0.18in</RightMargin>
+        <TopMargin>0.18in</TopMargin>
+        <BottomMargin>0.18in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>4</NumberOfColumns>
+      <NumberOfRows>2</NumberOfRows>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <EmbeddedImages>
+    <EmbeddedImage Name="ID1210202641344PM">
+      <MIMEType>image/jpeg</MIMEType>
+      <ImageData>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</ImageData>
+    </EmbeddedImage>
+  </EmbeddedImages>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>96d314b5-3a9a-4f2e-a5a7-5c1d77e84f0a</rd:ReportID>
+</Report>

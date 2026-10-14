@@ -1,0 +1,28 @@
+# Visual Studio and .NET build output
+.vs/
+bin/
+obj/
+build-check*/
+
+# User/local IDE files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.pfx
+
+# Local database and backup files
+*.bak
+*.mdf
+*.ndf
+*.ldf
+Database Backup/
+
+# Generated/archive artifacts
+*.zip
+ReportPageTest.exe
+
+# Temporary/log files
+*.log
+*.tmp
+*.cache

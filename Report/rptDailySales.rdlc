@@ -1,0 +1,1806 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="dsDailySalesSource">
+      <ConnectionProperties>
+        <DataProvider>System.Data.DataSet</DataProvider>
+        <ConnectString>/* Local DataSet */</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>00000000-0000-0000-0000-000000000001</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="dsDailySales">
+      <Query>
+        <DataSourceName>dsDailySalesSource</DataSourceName>
+        <CommandText>/* Local DataTable */</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="RowNo">
+          <DataField>RowNo</DataField>
+        </Field>
+        <Field Name="BillNumber">
+          <DataField>BillNumber</DataField>
+        </Field>
+        <Field Name="CTime">
+          <DataField>CTime</DataField>
+        </Field>
+        <Field Name="Name">
+          <DataField>Name</DataField>
+        </Field>
+        <Field Name="CustomerMobile">
+          <DataField>CustomerMobile</DataField>
+        </Field>
+        <Field Name="CustomerDisplay">
+          <DataField>CustomerDisplay</DataField>
+        </Field>
+        <Field Name="PaidMoney">
+          <DataField>PaidMoney</DataField>
+        </Field>
+        <Field Name="DiscountMoney">
+          <DataField>DiscountMoney</DataField>
+        </Field>
+        <Field Name="TotalPrice">
+          <DataField>TotalPrice</DataField>
+        </Field>
+        <Field Name="PayName">
+          <DataField>PayName</DataField>
+        </Field>
+        <Field Name="RDBranchName">
+          <DataField>RDBranchName</DataField>
+        </Field>
+        <Field Name="ProductCode">
+          <DataField>ProductCode</DataField>
+        </Field>
+        <Field Name="Barcode">
+          <DataField>Barcode</DataField>
+        </Field>
+        <Field Name="PdName">
+          <DataField>PdName</DataField>
+        </Field>
+        <Field Name="Item">
+          <DataField>Item</DataField>
+        </Field>
+        <Field Name="Number">
+          <DataField>Number</DataField>
+        </Field>
+        <Field Name="Price">
+          <DataField>Price</DataField>
+        </Field>
+        <Field Name="SUnit">
+          <DataField>SUnit</DataField>
+        </Field>
+        <Field Name="LineTotal">
+          <DataField>LineTotal</DataField>
+        </Field>
+        <Field Name="SpecialDetail">
+          <DataField>SpecialDetail</DataField>
+        </Field>
+        <Field Name="DiscountNote">
+          <DataField>DiscountNote</DataField>
+        </Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Textbox Name="txtRange">
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>ตั้งแต่วันที่</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>16pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value xml:space="preserve"> </Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>16pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=Parameters!pDateFrom.Value &amp; " (00:00:00)"</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>16pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value> ถึง </Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>16pt</FontSize>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>=Parameters!pDateTo.Value &amp; " (23:59:59)"</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>16pt</FontSize>
+                      <FontWeight>Normal</FontWeight>
+                    </Style>
+                  </TextRun>
+                  <TextRun>
+                    <Value>    สาขาที่ 1 [ค้นจาก Doc Date (วันที่เอกสาร)]</Value>
+                    <Style>
+                      <FontFamily>Angsana New</FontFamily>
+                      <FontSize>16pt</FontSize>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <TextAlign>Center</TextAlign>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Height>0.35in</Height>
+            <Width>7.5in</Width>
+            <Style>
+              <Border>
+                <Style>None</Style>
+              </Border>
+            </Style>
+          </Textbox>
+          <Tablix Name="tblBillHeader">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn>
+                  <Width>0.30583in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.72472in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.1in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.90833in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>2in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.01445in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.8in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>0.78334in</Width>
+                </TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.58667in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox4">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Doc Date (วันที่)</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>     Item  รหัสสินค้า </Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox4</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                          </Style>
+                        </Textbox>
+                        <ColSpan>2</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="thBranch">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>สาขา</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>/ Barcode</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="thBill">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>      เลขที่</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>ชื่อสินค้า</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="thCustomer">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>ลูกค้า [เบอร์โทรศัพท์]</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value xml:space="preserve">                                               </Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                                <TextRun>
+                                  <Value>จำนวน</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="thPay">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>     วิธีการชำระเงิน</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value xml:space="preserve">  </Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                                <TextRun>
+                                  <Value>หน่วย</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="thDiscount">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>ส่วนลดท้ายบิล</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextAlign>Right</TextAlign>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>ราคาต่อหน่วย</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <TextAlign>Right</TextAlign>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="thTotalPrice">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>ราคาขายทั้งบิล</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextAlign>Right</TextAlign>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>จำนวนเงิน</Value>
+                                  <Style>
+                                    <Border>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <BackgroundColor>#d9eaf7</BackgroundColor>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>14pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <TextAlign>Right</TextAlign>
+                                    <PaddingTop>2pt</PaddingTop>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Style>Solid</Style>
+                            </BottomBorder>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.23in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox5">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Format(Fields!CTime.Value, "dd/MM/yyyy") &amp; " [" &amp; Format(Fields!CTime.Value, "HH:mm") &amp; "]"</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox5</rd:DefaultName>
+                          <Style />
+                        </Textbox>
+                        <ColSpan>2</ColSpan>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell />
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tdBranch">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!RDBranchName.Value</Value>
+                                  <Style>
+                                    <Border>
+                                      <Color>#c0c0c0</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tdBill">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!BillNumber.Value</Value>
+                                  <Style>
+                                    <Border>
+                                      <Color>#c0c0c0</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextAlign>Right</TextAlign>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <TextAlign>Right</TextAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tdCustomer">
+                          <CanGrow>true</CanGrow>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value xml:space="preserve">      </Value>
+                                  <Style>
+                                    <Border>
+                                      <Color>#c0c0c0</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextAlign>Left</TextAlign>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                  </Style>
+                                </TextRun>
+                                <TextRun>
+                                  <Value>=Fields!CustomerDisplay.Value</Value>
+                                  <Style>
+                                    <Border>
+                                      <Color>#c0c0c0</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextAlign>Left</TextAlign>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Left</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style>
+                            <TextAlign>Left</TextAlign>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tdPay">
+                          <CanGrow>true</CanGrow>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PayName.Value</Value>
+                                  <Style>
+                                    <Border>
+                                      <Color>#c0c0c0</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                  </Style>
+                                </TextRun>
+                                <TextRun>
+                                  <Value xml:space="preserve">    </Value>
+                                  <Style>
+                                    <Border>
+                                      <Color>#c0c0c0</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                  </Style>
+                                </TextRun>
+                                <TextRun>
+                                  <Value>=IIF(IsNothing(Fields!DiscountNote.Value) OR CStr(Fields!DiscountNote.Value) = "", "", vbCrLf &amp; CStr(Fields!DiscountNote.Value))</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextAlign>Left</TextAlign>
+                                    <PaddingLeft>2pt</PaddingLeft>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tdDiscount">
+                          <CanGrow>true</CanGrow>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Format(Fields!DiscountMoney.Value, "N2")</Value>
+                                  <Style>
+                                    <Border>
+                                      <Color>#c0c0c0</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tdTotalPrice">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Format(Fields!TotalPrice.Value, "N2")</Value>
+                                  <Style>
+                                    <Border>
+                                      <Color>#c0c0c0</Color>
+                                      <Style>Solid</Style>
+                                    </Border>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                    <TextAlign>Right</TextAlign>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.21in</Height>
+                  <TablixCells>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox6">
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=CStr(Fields!Item.Value)</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox6</rd:DefaultName>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tdItemDetail">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Trim(CStr(Fields!ProductCode.Value)) &amp; " / "</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                    <TextAlign>Right</TextAlign>
+                                    <PaddingRight>4pt</PaddingRight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Barcode">
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!Barcode.Value</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Barcode</rd:DefaultName>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="PdName">
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!PdName.Value</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>PdName</rd:DefaultName>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Number">
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Format(Fields!Number.Value, "N2")</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Number</rd:DefaultName>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="SUnit">
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value xml:space="preserve">   </Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                                <TextRun>
+                                  <Value>=Fields!SUnit.Value</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                                <TextRun>
+                                  <Value xml:space="preserve">  </Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>SUnit</rd:DefaultName>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Price">
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Format(Fields!Price.Value, "N2")</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Price</rd:DefaultName>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="tdProductBlank">
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Format(Fields!LineTotal.Value, "N2")</Value>
+                                  <Style>
+                                    <FontFamily>Angsana New</FontFamily>
+                                    <FontSize>12pt</FontSize>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Right</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <Style />
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+                <TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember>
+                  <KeepWithGroup>After</KeepWithGroup>
+                  <RepeatOnNewPage>true</RepeatOnNewPage>
+                </TablixMember>
+                <TablixMember>
+                  <Group Name="BillGroup">
+                    <GroupExpressions>
+                      <GroupExpression>=Fields!BillNumber.Value</GroupExpression>
+                    </GroupExpressions>
+                  </Group>
+                  <TablixMembers>
+                    <TablixMember />
+                    <TablixMember>
+                      <Group Name="BillItemDetail" />
+                    </TablixMember>
+                  </TablixMembers>
+                </TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>dsDailySales</DataSetName>
+            <Top>0.37778in</Top>
+            <Height>1.02667in</Height>
+            <Width>7.63667in</Width>
+            <ZIndex>1</ZIndex>
+            <Style />
+          </Tablix>
+          <Line Name="Line1">
+            <Top>0.37167in</Top>
+            <Left>0.005in</Left>
+            <Height>0in</Height>
+            <Width>7.62833in</Width>
+            <ZIndex>2</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+            </Style>
+          </Line>
+        </ReportItems>
+        <Height>8.95in</Height>
+        <Style />
+      </Body>
+      <Width>7.7225in</Width>
+      <Page>
+        <PageHeader>
+          <Height>0.63333in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Textbox Name="txtPrintDate">
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>วั</Value>
+                      <Style>
+                        <FontFamily>Tahoma</FontFamily>
+                        <FontSize>8pt</FontSize>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>นที่พิมพ์: </Value>
+                      <Style>
+                        <FontFamily>Angsana New</FontFamily>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Format(Now(), "dd/MM/yyyy HH:mm")</Value>
+                      <Style>
+                        <FontFamily>Angsana New</FontFamily>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.05in</Top>
+              <Left>6.4in</Left>
+              <Height>0.18in</Height>
+              <Width>1.23333in</Width>
+              <Style>
+                <TextAlign>Right</TextAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="txtPageHeader">
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>หน้า </Value>
+                      <Style>
+                        <FontFamily>Angsana New</FontFamily>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Globals!PageNumber</Value>
+                      <Style>
+                        <FontFamily>Angsana New</FontFamily>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>/</Value>
+                      <Style>
+                        <FontFamily>Angsana New</FontFamily>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </TextRun>
+                    <TextRun>
+                      <Value>=Globals!TotalPages</Value>
+                      <Style>
+                        <FontFamily>Angsana New</FontFamily>
+                        <FontSize>11pt</FontSize>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Right</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.27167in</Top>
+              <Left>6.65in</Left>
+              <Height>0.18in</Height>
+              <Width>0.98333in</Width>
+              <ZIndex>1</ZIndex>
+              <Style>
+                <TextAlign>Right</TextAlign>
+              </Style>
+            </Textbox>
+            <Textbox Name="txtTitle">
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>รายงานแสดงข้อมูลการขายสินค้าและบริการ</Value>
+                      <Style>
+                        <FontFamily>Angsana New</FontFamily>
+                        <FontSize>20pt</FontSize>
+                        <FontWeight>Bold</FontWeight>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+              <Top>0.22in</Top>
+              <Left>1in</Left>
+              <Height>0.39944in</Height>
+              <Width>5.33056in</Width>
+              <ZIndex>2</ZIndex>
+              <Style />
+            </Textbox>
+          </ReportItems>
+          <Style />
+        </PageHeader>
+        <PageFooter>
+          <Height>1.05in</Height>
+          <PrintOnFirstPage>true</PrintOnFirstPage>
+          <PrintOnLastPage>true</PrintOnLastPage>
+          <ReportItems>
+            <Rectangle Name="rectFinalSummary">
+              <ReportItems>
+                <Textbox Name="txtArrears">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pArrears.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.05556in</Top>
+                  <Left>0.05in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.1in</Width>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtCash">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pCash.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.27556in</Top>
+                  <Left>0.05in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.15in</Width>
+                  <ZIndex>1</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtInstallment">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pInstallment.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.28778in</Top>
+                  <Left>3.43888in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.15in</Width>
+                  <ZIndex>2</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtCheque">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pCheque.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.27556in</Top>
+                  <Left>5.425in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1in</Width>
+                  <ZIndex>3</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtTransfer">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pTransfer.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.49556in</Top>
+                  <Left>0.05in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.15in</Width>
+                  <ZIndex>4</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtWriteoff">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pWriteoff.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.49556in</Top>
+                  <Left>1.76388in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.35in</Width>
+                  <ZIndex>5</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtCashCard">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pCashCard.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.49556in</Top>
+                  <Left>3.43888in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.15in</Width>
+                  <ZIndex>6</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtPrepaid">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pPrepaid.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>11pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.49556in</Top>
+                  <Left>5.425in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.75333in</Width>
+                  <ZIndex>7</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtFreeCup">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pFreeCup.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.71556in</Top>
+                  <Left>0.05in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.35in</Width>
+                  <ZIndex>8</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtCustomerCertified">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pCustomerCertified.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.71556in</Top>
+                  <Left>1.775in</Left>
+                  <Height>0.22167in</Height>
+                  <Width>1.35in</Width>
+                  <ZIndex>9</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtTotalLabel">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pTotalLabel.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.05556in</Top>
+                  <Left>3.62221in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.35in</Width>
+                  <ZIndex>10</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtTotalAmount">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pTotalAmount.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style>
+                        <TextAlign>Right</TextAlign>
+                      </Style>
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.05556in</Top>
+                  <Left>6.7in</Left>
+                  <Height>0.18in</Height>
+                  <Width>0.75in</Width>
+                  <ZIndex>11</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtDiscountAmount">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pDiscountAmount.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style>
+                        <TextAlign>Right</TextAlign>
+                      </Style>
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.05556in</Top>
+                  <Left>5.55in</Left>
+                  <Height>0.18in</Height>
+                  <Width>0.75in</Width>
+                  <ZIndex>12</ZIndex>
+                  <Style />
+                </Textbox>
+                <Textbox Name="txtCashAfterDeduction">
+                  <Paragraphs>
+                    <Paragraph>
+                      <TextRuns>
+                        <TextRun>
+                          <Value>=Parameters!pCashAfterDeduction.Value</Value>
+                          <Style>
+                            <FontFamily>Angsana New</FontFamily>
+                            <FontSize>12pt</FontSize>
+                            <FontWeight>Bold</FontWeight>
+                          </Style>
+                        </TextRun>
+                      </TextRuns>
+                      <Style />
+                    </Paragraph>
+                  </Paragraphs>
+                  <Top>0.27556in</Top>
+                  <Left>1.775in</Left>
+                  <Height>0.18in</Height>
+                  <Width>1.85in</Width>
+                  <ZIndex>13</ZIndex>
+                  <Style />
+                </Textbox>
+              </ReportItems>
+              <KeepTogether>true</KeepTogether>
+              <Left>0.03888in</Left>
+              <Height>0.93723in</Height>
+              <Width>7.55in</Width>
+              <Visibility>
+                <Hidden>=Globals!PageNumber &lt;&gt; Globals!TotalPages</Hidden>
+              </Visibility>
+              <Style>
+                <Border>
+                  <Color>#707070</Color>
+                  <Style>Solid</Style>
+                </Border>
+                <BottomBorder>
+                  <Style>None</Style>
+                </BottomBorder>
+                <LeftBorder>
+                  <Style>None</Style>
+                </LeftBorder>
+                <RightBorder>
+                  <Style>None</Style>
+                </RightBorder>
+                <PaddingLeft>3pt</PaddingLeft>
+                <PaddingTop>2pt</PaddingTop>
+              </Style>
+            </Rectangle>
+          </ReportItems>
+          <Style />
+        </PageFooter>
+        <PageHeight>11.69in</PageHeight>
+        <PageWidth>8.27in</PageWidth>
+        <LeftMargin>0.25in</LeftMargin>
+        <RightMargin>0.25in</RightMargin>
+        <TopMargin>0.25in</TopMargin>
+        <BottomMargin>0.25in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="pDateFrom">
+      <DataType>String</DataType>
+      <Prompt>วันที่เริ่มต้น</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pDateTo">
+      <DataType>String</DataType>
+      <Prompt>วันที่สิ้นสุด</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pArrears">
+      <DataType>String</DataType>
+      <Prompt>ยอดค้างชำระ</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pTotalLabel">
+      <DataType>String</DataType>
+      <Prompt>จำนวนบิล</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pTotalAmount">
+      <DataType>String</DataType>
+      <Prompt>ยอดรวม</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pDiscountLabel">
+      <DataType>String</DataType>
+      <Prompt>ส่วนลดรวม</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pDiscountAmount">
+      <DataType>String</DataType>
+      <Prompt>ยอดส่วนลดรวม</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pCash">
+      <DataType>String</DataType>
+      <Prompt>เงินสด</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pCredit">
+      <DataType>String</DataType>
+      <Prompt>บัตรเครดิต</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pInstallment">
+      <DataType>String</DataType>
+      <Prompt>เงินผ่อน</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pCheque">
+      <DataType>String</DataType>
+      <Prompt>เช็ค</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pTransfer">
+      <DataType>String</DataType>
+      <Prompt>เงินโอน</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pWriteoff">
+      <DataType>String</DataType>
+      <Prompt>ชำระโดยลดหนี้</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pCashCard">
+      <DataType>String</DataType>
+      <Prompt>บัตรเงินสด</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pPrepaid">
+      <DataType>String</DataType>
+      <Prompt>เงินที่ชำระไว้ล่วงหน้า</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pFreeCup">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>[แก้วฟรี 0 ใบ / 0.00]</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>แก้วฟรี</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pCustomerCertified">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>[รับรองลูกค้า 0.00]</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>รับรองลูกค้า</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="pCashAfterDeduction">
+      <DataType>String</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>[เงินสดหลังหัก 0.00]</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>เงินสดหลังหัก</Prompt>
+    </ReportParameter>
+  </ReportParameters>
+  <ReportParametersLayout>
+    <GridLayoutDefinition>
+      <NumberOfColumns>8</NumberOfColumns>
+      <NumberOfRows>3</NumberOfRows>
+      <CellDefinitions>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>pDateFrom</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>pDateTo</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>pArrears</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>pTotalLabel</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>4</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>pTotalAmount</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>5</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>pDiscountLabel</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>6</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>pDiscountAmount</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>7</ColumnIndex>
+          <RowIndex>0</RowIndex>
+          <ParameterName>pCash</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>pCredit</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>pInstallment</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>2</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>pCheque</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>3</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>pTransfer</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>4</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>pWriteoff</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>5</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>pCashCard</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>6</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>pPrepaid</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>7</ColumnIndex>
+          <RowIndex>1</RowIndex>
+          <ParameterName>pFreeCup</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>pCustomerCertified</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>1</ColumnIndex>
+          <RowIndex>2</RowIndex>
+          <ParameterName>pCashAfterDeduction</ParameterName>
+        </CellDefinition>
+      </CellDefinitions>
+    </GridLayoutDefinition>
+  </ReportParametersLayout>
+  <Language>th-TH</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+  <rd:ReportUnitType>Inch</rd:ReportUnitType>
+  <rd:ReportID>00000000-0000-0000-0000-000000000002</rd:ReportID>
+</Report>
