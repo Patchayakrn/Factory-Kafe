@@ -75,7 +75,7 @@
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>="วันที่ " &amp; Parameters!pDateFrom.Value &amp; " ถึง " &amp; Parameters!pDateTo.Value</Value>
+                    <Value>="วันที่ " &amp; Format(Parameters!pDateFrom.Value, "dd/MM/yyyy") &amp; " ถึง " &amp; Format(Parameters!pDateTo.Value, "dd/MM/yyyy")</Value>
                     <Style>
                       <FontFamily>Angsana New</FontFamily>
                       <FontSize>16pt</FontSize>

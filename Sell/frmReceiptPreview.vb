@@ -44,6 +44,19 @@ Public Class frmReceiptPreview
         Public Property Items As New List(Of ReceiptItem)
     End Class
 
+    Public Shared Function CleanReceiptRemark(remark As String) As String
+        If String.IsNullOrWhiteSpace(remark) Then Return ""
+
+        Dim cleanedParts As New List(Of String)()
+        For Each part As String In remark.Split(New String() {"/"}, StringSplitOptions.RemoveEmptyEntries)
+            Dim text As String = part.Trim()
+            If text.Length = 0 OrElse String.Equals(text, "โปรโมชั่นพิเศษ", StringComparison.OrdinalIgnoreCase) Then Continue For
+            cleanedParts.Add(text)
+        Next
+
+        Return String.Join(" / ", cleanedParts)
+    End Function
+
     Private Sub frmReceiptPreview_Load(sender As Object, e As EventArgs) Handles MyBase.Load
 
         With PrintDocument1.DefaultPageSettings

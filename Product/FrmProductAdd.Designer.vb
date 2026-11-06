@@ -98,6 +98,7 @@ Partial Class FrmProductAdd
         Me.pnlCommentBorder = New System.Windows.Forms.Panel()
         Me.tbComment = New Krypton.Toolkit.KryptonTextBox()
         Me.grpOptions = New System.Windows.Forms.GroupBox()
+        Me.cbStatus = New Krypton.Toolkit.KryptonCheckBox()
         Me.cbCanCollectPoint = New Krypton.Toolkit.KryptonCheckBox()
         Me.cbAlert = New Krypton.Toolkit.KryptonCheckBox()
         Me.cbAllowDecimal = New Krypton.Toolkit.KryptonCheckBox()
@@ -112,6 +113,7 @@ Partial Class FrmProductAdd
         Me.tbMainSupplier = New Krypton.Toolkit.KryptonTextBox()
         Me.KryptonComboBox1 = New Krypton.Toolkit.KryptonComboBox()
         Me.cbProductGroup = New Krypton.Toolkit.KryptonComboBox()
+        Me.cbProductCategory = New Krypton.Toolkit.KryptonComboBox()
         Me.tbBarcode = New Krypton.Toolkit.KryptonTextBox()
         Me.tbName2 = New Krypton.Toolkit.KryptonTextBox()
         Me.tbName = New Krypton.Toolkit.KryptonTextBox()
@@ -122,10 +124,10 @@ Partial Class FrmProductAdd
         Me.lblEditBarcode = New System.Windows.Forms.Label()
         Me.chkEditAutoCode = New System.Windows.Forms.CheckBox()
         Me.lblEditGroup = New System.Windows.Forms.Label()
+        Me.lblEditCategory = New System.Windows.Forms.Label()
         Me.lblEditBrand = New System.Windows.Forms.Label()
         Me.lblEditSupplier = New System.Windows.Forms.Label()
         Me.lblEditUnit = New System.Windows.Forms.Label()
-        Me.cbStatus = New Krypton.Toolkit.KryptonCheckBox()
         Me.pnlHeader.SuspendLayout()
         Me.Panel1.SuspendLayout()
         Me.grpInformationSingle.SuspendLayout()
@@ -140,6 +142,7 @@ Partial Class FrmProductAdd
         CType(Me.pbPicture, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.KryptonComboBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.cbProductGroup, System.ComponentModel.ISupportInitialize).BeginInit()
+        CType(Me.cbProductCategory, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'pnlHeader
@@ -203,7 +206,7 @@ Partial Class FrmProductAdd
         Me.Panel1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.Panel1.Location = New System.Drawing.Point(0, 74)
         Me.Panel1.Name = "Panel1"
-        Me.Panel1.Size = New System.Drawing.Size(1814, 1050)
+        Me.Panel1.Size = New System.Drawing.Size(1814, 981)
         Me.Panel1.TabIndex = 4
         '
         'grpInformationSingle
@@ -219,7 +222,7 @@ Partial Class FrmProductAdd
         Me.grpInformationSingle.Location = New System.Drawing.Point(0, 0)
         Me.grpInformationSingle.Name = "grpInformationSingle"
         Me.grpInformationSingle.Padding = New System.Windows.Forms.Padding(12, 34, 12, 12)
-        Me.grpInformationSingle.Size = New System.Drawing.Size(1814, 1050)
+        Me.grpInformationSingle.Size = New System.Drawing.Size(1814, 981)
         Me.grpInformationSingle.TabIndex = 1
         Me.grpInformationSingle.TabStop = False
         '
@@ -230,7 +233,7 @@ Partial Class FrmProductAdd
         Me.btnCancel.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.btnCancel.Font = New System.Drawing.Font("Cordia New", 16.0!, System.Drawing.FontStyle.Bold)
         Me.btnCancel.ForeColor = System.Drawing.Color.FromArgb(CType(CType(71, Byte), Integer), CType(CType(85, Byte), Integer), CType(CType(105, Byte), Integer))
-        Me.btnCancel.Location = New System.Drawing.Point(1651, 958)
+        Me.btnCancel.Location = New System.Drawing.Point(1651, 889)
         Me.btnCancel.Name = "btnCancel"
         Me.btnCancel.Size = New System.Drawing.Size(145, 54)
         Me.btnCancel.TabIndex = 71
@@ -244,7 +247,7 @@ Partial Class FrmProductAdd
         Me.btnSave.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.btnSave.Font = New System.Drawing.Font("Cordia New", 16.0!, System.Drawing.FontStyle.Bold)
         Me.btnSave.ForeColor = System.Drawing.Color.White
-        Me.btnSave.Location = New System.Drawing.Point(1428, 958)
+        Me.btnSave.Location = New System.Drawing.Point(1428, 889)
         Me.btnSave.Name = "btnSave"
         Me.btnSave.Size = New System.Drawing.Size(207, 54)
         Me.btnSave.TabIndex = 70
@@ -988,6 +991,7 @@ Partial Class FrmProductAdd
         Me.grpEditBasic.Controls.Add(Me.tbMainSupplier)
         Me.grpEditBasic.Controls.Add(Me.KryptonComboBox1)
         Me.grpEditBasic.Controls.Add(Me.cbProductGroup)
+        Me.grpEditBasic.Controls.Add(Me.cbProductCategory)
         Me.grpEditBasic.Controls.Add(Me.tbBarcode)
         Me.grpEditBasic.Controls.Add(Me.tbName2)
         Me.grpEditBasic.Controls.Add(Me.tbName)
@@ -998,6 +1002,7 @@ Partial Class FrmProductAdd
         Me.grpEditBasic.Controls.Add(Me.lblEditBarcode)
         Me.grpEditBasic.Controls.Add(Me.chkEditAutoCode)
         Me.grpEditBasic.Controls.Add(Me.lblEditGroup)
+        Me.grpEditBasic.Controls.Add(Me.lblEditCategory)
         Me.grpEditBasic.Controls.Add(Me.lblEditBrand)
         Me.grpEditBasic.Controls.Add(Me.lblEditSupplier)
         Me.grpEditBasic.Controls.Add(Me.lblEditUnit)
@@ -1058,10 +1063,20 @@ Partial Class FrmProductAdd
         Me.grpOptions.Margin = New System.Windows.Forms.Padding(0, 12, 0, 0)
         Me.grpOptions.Name = "grpOptions"
         Me.grpOptions.Padding = New System.Windows.Forms.Padding(22)
-        Me.grpOptions.Size = New System.Drawing.Size(314, 300)
+        Me.grpOptions.Size = New System.Drawing.Size(330, 300)
         Me.grpOptions.TabIndex = 7
         Me.grpOptions.TabStop = False
         Me.grpOptions.Text = "สถานะและตัวเลือก"
+        '
+        'cbStatus
+        '
+        Me.cbStatus.Location = New System.Drawing.Point(24, 249)
+        Me.cbStatus.Name = "cbStatus"
+        Me.cbStatus.Size = New System.Drawing.Size(187, 38)
+        Me.cbStatus.StateCommon.ShortText.Color1 = System.Drawing.Color.Red
+        Me.cbStatus.StateCommon.ShortText.Font = New System.Drawing.Font("Cordia New", 14.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.cbStatus.TabIndex = 6
+        Me.cbStatus.Values.Text = "ไม่ใช้แล้ว (ยกเลิกสินค้า)"
         '
         'cbCanCollectPoint
         '
@@ -1210,6 +1225,17 @@ Partial Class FrmProductAdd
         Me.cbProductGroup.StateCommon.Item.Content.ShortText.Font = New System.Drawing.Font("Cordia New", 14.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.cbProductGroup.TabIndex = 22
         '
+        'cbProductCategory
+        '
+        Me.cbProductCategory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList
+        Me.cbProductCategory.Location = New System.Drawing.Point(1560, 449)
+        Me.cbProductCategory.Margin = New System.Windows.Forms.Padding(8)
+        Me.cbProductCategory.Name = "cbProductCategory"
+        Me.cbProductCategory.Size = New System.Drawing.Size(226, 39)
+        Me.cbProductCategory.StateCommon.ComboBox.Content.Font = New System.Drawing.Font("Cordia New", 14.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.cbProductCategory.StateCommon.Item.Content.ShortText.Font = New System.Drawing.Font("Cordia New", 14.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.cbProductCategory.TabIndex = 23
+        '
         'tbBarcode
         '
         Me.tbBarcode.Location = New System.Drawing.Point(251, 206)
@@ -1306,6 +1332,16 @@ Partial Class FrmProductAdd
         Me.lblEditGroup.TabIndex = 9
         Me.lblEditGroup.Text = "Group Product (กลุ่มสินค้า)"
         '
+        'lblEditCategory
+        '
+        Me.lblEditCategory.AutoSize = True
+        Me.lblEditCategory.Font = New System.Drawing.Font("Cordia New", 13.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblEditCategory.Location = New System.Drawing.Point(1448, 449)
+        Me.lblEditCategory.Name = "lblEditCategory"
+        Me.lblEditCategory.Size = New System.Drawing.Size(101, 32)
+        Me.lblEditCategory.TabIndex = 10
+        Me.lblEditCategory.Text = "ประเภทสินค้า"
+        '
         'lblEditBrand
         '
         Me.lblEditBrand.AutoSize = True
@@ -1336,21 +1372,11 @@ Partial Class FrmProductAdd
         Me.lblEditUnit.TabIndex = 15
         Me.lblEditUnit.Text = "Small Unit (หน่วยเล็กที่สุด)"
         '
-        'cbStatus
-        '
-        Me.cbStatus.Location = New System.Drawing.Point(24, 249)
-        Me.cbStatus.Name = "cbStatus"
-        Me.cbStatus.Size = New System.Drawing.Size(187, 38)
-        Me.cbStatus.StateCommon.ShortText.Color1 = System.Drawing.Color.Red
-        Me.cbStatus.StateCommon.ShortText.Font = New System.Drawing.Font("Cordia New", 14.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.cbStatus.TabIndex = 6
-        Me.cbStatus.Values.Text = "ไม่ใช้แล้ว (ยกเลิกสินค้า)"
-        '
         'FrmProductAdd
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(8.0!, 16.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(1814, 1124)
+        Me.ClientSize = New System.Drawing.Size(1814, 1055)
         Me.Controls.Add(Me.Panel1)
         Me.Controls.Add(Me.pnlHeader)
         Me.Name = "FrmProductAdd"
@@ -1375,6 +1401,7 @@ Partial Class FrmProductAdd
         CType(Me.pbPicture, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.KryptonComboBox1, System.ComponentModel.ISupportInitialize).EndInit()
         CType(Me.cbProductGroup, System.ComponentModel.ISupportInitialize).EndInit()
+        CType(Me.cbProductCategory, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
@@ -1391,6 +1418,7 @@ Partial Class FrmProductAdd
     Friend WithEvents lblEditBarcode As Label
     Friend WithEvents chkEditAutoCode As CheckBox
     Friend WithEvents lblEditGroup As Label
+    Friend WithEvents lblEditCategory As Label
     Friend WithEvents lblEditBrand As Label
     Friend WithEvents lblEditSupplier As Label
     Friend WithEvents lblEditUnit As Label
@@ -1422,6 +1450,7 @@ Partial Class FrmProductAdd
     Friend WithEvents tbName2 As Krypton.Toolkit.KryptonTextBox
     Friend WithEvents tbBarcode As Krypton.Toolkit.KryptonTextBox
     Friend WithEvents cbProductGroup As Krypton.Toolkit.KryptonComboBox
+    Friend WithEvents cbProductCategory As Krypton.Toolkit.KryptonComboBox
     Friend WithEvents KryptonComboBox1 As Krypton.Toolkit.KryptonComboBox
     Friend WithEvents tbMainSupplier As Krypton.Toolkit.KryptonTextBox
     Friend WithEvents cbSUnit As Krypton.Toolkit.KryptonComboBox

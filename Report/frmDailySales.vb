@@ -32,10 +32,12 @@ Public Class frmDailySales
     Dim freeCupAmount As Decimal
     Dim totalCustomerCertified As Decimal
     Private dailySalesDbOptimized As Boolean = False
+    Private dailySalesSchemaReady As Boolean = False
     Private splitBillDetails As SplitContainer
 
     Private lblBillItemsSummary As Label
     Private isLoadingBills As Boolean = False
+    Private isLoadingReport As Boolean = False
     Public Sub New()
         MyBase.New()
         InitializeComponent()
@@ -134,6 +136,12 @@ Public Class frmDailySales
 
     Private Sub LoadSampleData()
         Try
+            'ฐานข้อมูลรุ่นเก่าอาจยังไม่มีคอลัมน์ CashReceived/CashChange
+            'ต้องตรวจโครงสร้างก่อนสร้างคำสั่ง SELECT ที่อ้างถึงคอลัมน์นี้
+            If Not dailySalesSchemaReady Then
+                DbSchemaChecker.EnsureSupportTables()
+                dailySalesSchemaReady = True
+            End If
             Dim dateFrom As String = dtpDateFrom.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             Dim dateTo As String = dtpDateTo.Value.AddDays(1).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             clsSQL = New clsSQLQuery
@@ -144,10 +152,14 @@ Public Class frmDailySales
                 sb.Append("ROW_NUMBER() OVER (ORDER BY SL.SellNumber ) As RowNo, ")
                 sb.Append("SL.SellNumber, SL.BranchNumber, billnumber, SL.ctime, CS.name, ISNULL(PaidMoney, 0) AS PaidMoney, ISNULL(DCCash, 0) AS DiscountMoney, ")
                 sb.Append("ISNULL(TotalPrice, 0) AS TotalPrice, ")
+                sb.Append("CASE WHEN ISNULL(FCD.FreeCupOut, 0) > 0 THEN N'ฟรี ' + CONVERT(nvarchar(20), CONVERT(int, FCD.FreeCupOut)) + N' ใบ' ELSE N'-' END AS FreeCupDisplay, ")
+                sb.Append("CASE WHEN SL.PayType = 1 AND SL.CashReceived IS NOT NULL THEN CONVERT(nvarchar(50), CAST(SL.CashReceived AS decimal(18,2))) ELSE N'-' END AS CashReceivedDisplay, ")
+                sb.Append("CASE WHEN SL.PayType = 1 AND SL.CashChange IS NOT NULL THEN CONVERT(nvarchar(50), CAST(SL.CashChange AS decimal(18,2))) ELSE N'-' END AS CashChangeDisplay, ")
                 sb.Append(DailySalesPayNameSql("SL"))
                 sFrom.Append("Sell SL ")
                 sFrom.Append("inner Join Customer CS on SL.CustomerNumber = CS.CustomerNumber ")
                 sFrom.Append("LEFT JOIN SellCustomerCertified SCC ON SL.BranchNumber = SCC.BranchNumber AND SL.SellNumber = SCC.SellNumber ")
+                sFrom.Append(DailySalesFreeCupJoinSql("SL", dateFrom, dateTo))
                 sWhere.Append("SL.CTime >= '" & dateFrom & "' ")
                 sWhere.Append("AND SL.CTime < '" & dateTo & "' ")
                 sWhere.Append(DailySalesBranchFilterSql("SL"))
@@ -164,7 +176,10 @@ Public Class frmDailySales
                 dgvBills.Columns("colCustomer").DataPropertyName = "Name"
                 dgvBills.Columns("colTotal").DataPropertyName = "PaidMoney"
                 dgvBills.Columns("colDiscount").DataPropertyName = "DiscountMoney"
+                dgvBills.Columns("colFreeCup").DataPropertyName = "FreeCupDisplay"
                 dgvBills.Columns("colNet").DataPropertyName = "TotalPrice"
+                dgvBills.Columns("colCashReceived").DataPropertyName = "CashReceivedDisplay"
+                dgvBills.Columns("colCashChange").DataPropertyName = "CashChangeDisplay"
                 dgvBills.Columns("colPayType").DataPropertyName = "PayName"
 
                 isLoadingBills = True
@@ -217,11 +232,73 @@ Public Class frmDailySales
         Return "AND " & sellAlias & ".PayType IN (1,4) "
     End Function
 
+    Private Function DailySalesFreeCupJoinSql(sellAlias As String, dateFrom As String, dateTo As String) As String
+        'รวมข้อมูลแก้วฟรีเฉพาะบิลในช่วงวันที่เลือก แทนการกวาดข้อมูลย้อนหลังทั้งตาราง
+        Return "LEFT JOIN (" &
+               "SELECT CFC.SellBranchNumber AS BranchNumber, CFC.SellNumber, " &
+               "SUM(CFC.FreeCupOut) AS FreeCupOut, " &
+               "SUM(CFC.FreeCupOut * ISNULL(BV.FreeCupPrice, 0)) AS FreeCupAmount " &
+               "FROM CustomerFreeCup CFC " &
+               "INNER JOIN Sell SFC ON (SFC.BranchNumber = CFC.SellBranchNumber OR ISNULL(CFC.SellBranchNumber, 0) = 0) " &
+               "AND SFC.SellNumber = CFC.SellNumber " &
+               "AND SFC.CTime >= '" & dateFrom & "' AND SFC.CTime < '" & dateTo & "' " &
+               "LEFT JOIN (" &
+               "SELECT SD2.BranchNumber, SD2.SellNumber, MAX(ISNULL(SD2.Price, 0)) AS FreeCupPrice " &
+               "FROM SellD SD2 " &
+               "INNER JOIN Product PD2 ON SD2.PN = PD2.PN " &
+               "INNER JOIN Sell SDF ON SDF.BranchNumber = SD2.BranchNumber " &
+               "AND SDF.SellNumber = SD2.SellNumber " &
+               "AND SDF.CTime >= '" & dateFrom & "' AND SDF.CTime < '" & dateTo & "' " &
+               "LEFT JOIN ProductGroup PG2 ON PG2.ID = PD2.GroupID " &
+               "LEFT JOIN Category CT2 ON CT2.ID = PG2.CategoryID " &
+               "WHERE (ISNULL(CT2.ID, -1) = 5 OR ISNULL(CT2.Name, '') LIKE N'%เครื่องดื่ม%' " &
+               "OR ISNULL(PG2.Name, '') LIKE N'%เครื่องดื่ม%' " &
+               "OR ISNULL(PD2.SUnit, '') LIKE N'%แก้ว%' " &
+               "OR ISNULL(PD2.Name, '') LIKE N'%กาแฟ%' " &
+               "OR ISNULL(PD2.Name, '') LIKE N'%ชา%' " &
+               "OR ISNULL(PD2.Name, '') LIKE N'%โกโก้%' " &
+               "OR ISNULL(PD2.Name, '') LIKE N'%นม%' " &
+               "OR ISNULL(PD2.Name, '') LIKE N'%โซดา%' " &
+               "OR ISNULL(PD2.Name, '') LIKE N'%สมูทตี้%' " &
+               "OR ISNULL(PD2.Name, '') LIKE N'%อิตาเลี่ยน%') " &
+               "GROUP BY SD2.BranchNumber, SD2.SellNumber " &
+               ") BV ON BV.BranchNumber = CFC.SellBranchNumber AND BV.SellNumber = CFC.SellNumber " &
+               "WHERE CFC.FreeCupOut > 0 " &
+               "GROUP BY CFC.SellBranchNumber, CFC.SellNumber " &
+               ") FCD ON FCD.SellNumber = " & sellAlias & ".SellNumber " &
+               "AND (FCD.BranchNumber = " & sellAlias & ".BranchNumber OR ISNULL(FCD.BranchNumber, 0) = 0) "
+    End Function
+
+    Private Function DailySalesPromotionJoinSql(sellAlias As String, dateFrom As String, dateTo As String) As String
+        'สรุปโปรโมชั่นเฉพาะบิลในช่วงวันที่เลือก ไม่ใช้ FOR XML/OUTER APPLY ซ้ำกับทุกรายการสินค้า
+        Return "LEFT JOIN (" &
+               "SELECT SP.BranchNumber, SP.SellNumber, " &
+               "MAX(NULLIF(LTRIM(RTRIM(Detail)), N'')) AS Detail, " &
+               "MAX(CASE WHEN ISNULL(Detail, N'') NOT LIKE N'%แก้วฟรี%' " &
+               "AND ISNULL(Detail, N'') NOT LIKE N'%รับรอง%' " &
+               "AND NULLIF(LTRIM(RTRIM(Detail)), N'') IS NOT NULL THEN 1 ELSE 0 END) AS HasRegularPromotion " &
+               "FROM SellPromotion SP " &
+               "INNER JOIN Sell SPP ON SPP.BranchNumber = SP.BranchNumber " &
+               "AND SPP.SellNumber = SP.SellNumber " &
+               "AND SPP.CTime >= '" & dateFrom & "' AND SPP.CTime < '" & dateTo & "' " &
+               "GROUP BY SP.BranchNumber, SP.SellNumber " &
+               ") SPD ON SPD.BranchNumber = " & sellAlias & ".BranchNumber " &
+               "AND SPD.SellNumber = " & sellAlias & ".SellNumber "
+    End Function
+
     Private Function DailySalesDiscountNoteSql(sellAlias As String) As String
-        Return "ISNULL(N' {' + STUFF((SELECT N', ' + X.Note FROM (" &
-               "SELECT CASE WHEN ISNULL(" & sellAlias & ".DCCash, 0) > 0 AND (ISNULL(FCD.FreeCupOut, 0) <= 0 OR ISNULL(" & sellAlias & ".DCCash, 0) > ISNULL(FCD.FreeCupAmount, 0) OR EXISTS (SELECT 1 FROM SellPromotion SPN WHERE SPN.BranchNumber = " & sellAlias & ".BranchNumber AND SPN.SellNumber = " & sellAlias & ".SellNumber AND NULLIF(LTRIM(RTRIM(SPN.Detail)), N'') IS NOT NULL AND ISNULL(SPN.Detail, N'') NOT LIKE N'%แก้วฟรี%' AND ISNULL(SPN.Detail, N'') NOT LIKE N'%รับรอง%')) THEN N'ส่วนลด' END AS Note " &
-               "UNION ALL SELECT CASE WHEN ISNULL(FCD.FreeCupOut, 0) > 0 THEN N'แก้วฟรี' END " &
-               ") X WHERE X.Note IS NOT NULL AND X.Note <> N'' FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 2, N'') + N'}', N'') AS DiscountNote "
+        Return "CASE " &
+               "WHEN ISNULL(" & sellAlias & ".DCCash, 0) > 0 " &
+               "AND (ISNULL(FCD.FreeCupOut, 0) <= 0 " &
+               "OR ISNULL(" & sellAlias & ".DCCash, 0) > ISNULL(FCD.FreeCupAmount, 0) " &
+               "OR ISNULL(SPD.HasRegularPromotion, 0) = 1) " &
+               "AND ISNULL(FCD.FreeCupOut, 0) > 0 THEN N' {ส่วนลด, แก้วฟรี}' " &
+               "WHEN ISNULL(" & sellAlias & ".DCCash, 0) > 0 " &
+               "AND (ISNULL(FCD.FreeCupOut, 0) <= 0 " &
+               "OR ISNULL(" & sellAlias & ".DCCash, 0) > ISNULL(FCD.FreeCupAmount, 0) " &
+               "OR ISNULL(SPD.HasRegularPromotion, 0) = 1) THEN N' {ส่วนลด}' " &
+               "WHEN ISNULL(FCD.FreeCupOut, 0) > 0 THEN N' {แก้วฟรี}' " &
+               "ELSE N'' END AS DiscountNote "
     End Function
     Private Sub EditSelectedBill()
         If Not EnsureBillMaintenanceAllowed("Sell.Edit", "แก้ไขบิลขาย") Then Exit Sub
@@ -1000,17 +1077,28 @@ Public Class frmDailySales
     End Sub
 
     Private Sub btnPrint_Click(sender As Object, e As EventArgs) Handles btnPrint.Click
-        Dim dt As DataTable = GetDailySalesReportData()
+        If isLoadingReport Then Return
 
-        If dt Is Nothing OrElse dt.Rows.Count = 0 Then
-            MessageBox.Show("ไม่มีข้อมูล")
-            Exit Sub
-        End If
+        isLoadingReport = True
+        btnPrint.Enabled = False
+        If btnPromotion IsNot Nothing Then btnPromotion.Enabled = False
+        Try
+            Dim dt As DataTable = GetDailySalesReportData()
 
-        Using viewer As New frmReportViewer()
-            viewer.LoadDailySalesReport(dt, dtpDateFrom.Value, dtpDateTo.Value)
-            viewer.ShowDialog(Me)
-        End Using
+            If dt Is Nothing OrElse dt.Rows.Count = 0 Then
+                MessageBox.Show("ไม่มีข้อมูล")
+                Exit Sub
+            End If
+
+            Using viewer As New frmReportViewer()
+                viewer.LoadDailySalesReport(dt, dtpDateFrom.Value, dtpDateTo.Value)
+                viewer.ShowDialog(Me)
+            End Using
+        Finally
+            isLoadingReport = False
+            btnPrint.Enabled = True
+            If btnPromotion IsNot Nothing Then btnPromotion.Enabled = True
+        End Try
     End Sub
 
     Private Sub btnPrintReceipt_Click(sender As Object, e As EventArgs) Handles btnPrintReceipt.Click
@@ -1051,11 +1139,14 @@ Public Class frmDailySales
                 Dim headerSql As String =
                     "SELECT TOP 1 SL.BillNumber, SL.CTime, ISNULL(SL.PaidMoney, 0) AS PaidMoney, " &
                     "ISNULL(SL.DCCash, 0) AS DiscountMoney, ISNULL(SL.TotalPrice, 0) AS TotalPrice, " &
-                    "ISNULL(SL.PriceBV, 0) AS PriceBV, ISNULL(SL.Cash, 0) AS Cash, SL.PayType, " &
+                    "ISNULL(SL.PriceBV, 0) AS PriceBV, ISNULL(SL.Cash, 0) AS Cash, " &
+                    "ISNULL(SL.CashReceived, SL.Cash) AS CashReceived, " &
+                    "ISNULL(SL.CashChange, CASE WHEN ISNULL(SL.Cash, 0) > ISNULL(SL.TotalPrice, 0) THEN ISNULL(SL.Cash, 0) - ISNULL(SL.TotalPrice, 0) ELSE 0 END) AS CashChange, SL.PayType, " &
                     "ISNULL(SL.OfficerNumber, 0) AS OfficerNumber, RTRIM(ISNULL(O.Name, N'')) AS CashierName, " &
                     "RTRIM(ISNULL(CS.CustomerCode, N'')) AS CustomerCode, RTRIM(ISNULL(CS.Name, N'')) AS CustomerName, " &
                     "RTRIM(ISNULL(CS.Mobile, N'')) AS CustomerMobile, RTRIM(ISNULL(BR.BranchName, N'')) AS BranchName, " &
                     "RTRIM(ISNULL(BR.RDBranchName, N'')) AS RDBranchName, " &
+                    "RTRIM(ISNULL(SL.Comment, N'')) AS Remark, " &
                     "CASE WHEN EXISTS (SELECT 1 FROM SellCustomerCertified SCC WHERE SCC.BranchNumber=SL.BranchNumber AND SCC.SellNumber=SL.SellNumber) THEN N'รับรองลูกค้า' " &
                     "WHEN SL.PayType=1 THEN N'เงินสด' WHEN SL.PayType=4 THEN N'โอน 002203005517' ELSE N'-' END AS PayName " &
                     "FROM Sell SL " &
@@ -1088,13 +1179,14 @@ Public Class frmDailySales
                             .CustomerCode = Convert.ToString(reader("CustomerCode")),
                             .CustomerName = Convert.ToString(reader("CustomerName")),
                             .CustomerTel = Convert.ToString(reader("CustomerMobile")),
+                            .Remark = frmReceiptPreview.CleanReceiptRemark(Convert.ToString(reader("Remark"))),
                             .GrossTotal = Convert.ToDecimal(reader("PaidMoney")),
                             .SubTotal = Convert.ToDecimal(reader("PriceBV")),
                             .DiscountBath = Convert.ToDecimal(reader("DiscountMoney")),
                             .GrandTotal = Convert.ToDecimal(reader("TotalPrice")),
                             .VatAmount = Convert.ToDecimal(reader("TotalPrice")) - Convert.ToDecimal(reader("PriceBV")),
-                            .ReceiveAmount = Convert.ToDecimal(reader("Cash")),
-                            .ChangeAmount = Math.Max(0D, Convert.ToDecimal(reader("Cash")) - Convert.ToDecimal(reader("TotalPrice")))
+                            .ReceiveAmount = Convert.ToDecimal(reader("CashReceived")),
+                            .ChangeAmount = Convert.ToDecimal(reader("CashChange"))
                         }
                     End Using
                 End Using
@@ -1173,8 +1265,8 @@ Public Class frmDailySales
             sFrom.Append("LEFT JOIN SellCustomerCertified SCC ON SL.BranchNumber = SCC.BranchNumber AND SL.SellNumber = SCC.SellNumber ")
             sFrom.Append("Inner Join SellD SD on SL.BranchNumber = SD.BranchNumber AND SL.SellNumber = SD.SellNumber ")
             sFrom.Append("Inner join Product PD on SD.PN = PD.PN ")
-            sFrom.Append("OUTER APPLY (SELECT STUFF((SELECT N' / ' + X.Detail FROM (SELECT CASE WHEN EXISTS (SELECT 1 FROM CustomerFreeCup CFC WHERE CFC.SellBranchNumber = SL.BranchNumber AND CFC.SellNumber = SL.SellNumber AND CFC.FreeCupOut > 0) THEN N'แก้วฟรี' END AS Detail UNION ALL SELECT NULLIF(LTRIM(RTRIM(SP.Detail)), N'') FROM SellPromotion SP WHERE SP.BranchNumber = SL.BranchNumber AND SP.SellNumber = SL.SellNumber AND (ISNULL(SP.Detail, N'') NOT LIKE N'%แก้วฟรี%' OR EXISTS (SELECT 1 FROM CustomerFreeCup CFC2 WHERE CFC2.SellBranchNumber = SL.BranchNumber AND CFC2.SellNumber = SL.SellNumber AND CFC2.FreeCupOut > 0)) UNION ALL SELECT N'รับรองลูกค้า' WHERE EXISTS (SELECT 1 FROM SellCustomerCertified SCC WHERE SCC.BranchNumber = SL.BranchNumber AND SCC.SellNumber = SL.SellNumber)) X WHERE X.Detail IS NOT NULL AND X.Detail <> N'' FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 3, N'') AS Detail) SPD ")
-            sFrom.Append("OUTER APPLY (SELECT ISNULL(SUM(CFC.FreeCupOut), 0) AS FreeCupOut, ISNULL(SUM(CFC.FreeCupOut * ISNULL(BV.FreeCupPrice, 0)), 0) AS FreeCupAmount FROM CustomerFreeCup CFC OUTER APPLY (SELECT MAX(ISNULL(SD2.Price, 0)) AS FreeCupPrice FROM SellD SD2 INNER JOIN Product PD2 ON SD2.PN = PD2.PN LEFT JOIN ProductGroup PG2 ON PG2.ID = PD2.GroupID LEFT JOIN Category CT2 ON CT2.ID = PG2.CategoryID WHERE SD2.BranchNumber = CFC.SellBranchNumber AND SD2.SellNumber = CFC.SellNumber AND (ISNULL(CT2.ID, -1) = 5 OR ISNULL(CT2.Name, '') LIKE N'%เครื่องดื่ม%' OR ISNULL(PG2.Name, '') LIKE N'%เครื่องดื่ม%' OR ISNULL(PD2.SUnit, '') LIKE N'%แก้ว%' OR ISNULL(PD2.Name, '') LIKE N'%กาแฟ%' OR ISNULL(PD2.Name, '') LIKE N'%ชา%' OR ISNULL(PD2.Name, '') LIKE N'%โกโก้%' OR ISNULL(PD2.Name, '') LIKE N'%นม%' OR ISNULL(PD2.Name, '') LIKE N'%โซดา%' OR ISNULL(PD2.Name, '') LIKE N'%สมูทตี้%' OR ISNULL(PD2.Name, '') LIKE N'%อิตาเลี่ยน%')) BV WHERE CFC.SellNumber = SL.SellNumber AND (CFC.SellBranchNumber = SL.BranchNumber OR ISNULL(CFC.SellBranchNumber, 0) = 0) AND CFC.FreeCupOut > 0) FCD ")
+            sFrom.Append(DailySalesPromotionJoinSql("SL", dateFrom, dateTo))
+            sFrom.Append(DailySalesFreeCupJoinSql("SL", dateFrom, dateTo))
 
             sWhere.Append("SL.CTime >= '" & dateFrom & "' ")
             sWhere.Append("AND SL.CTime < '" & dateTo & "' ")
@@ -1190,17 +1282,28 @@ Public Class frmDailySales
     End Function
 
     Private Sub btnPromotion_Click(sender As Object, e As EventArgs) Handles btnPromotion.Click
-        Dim dt As DataTable = GetSalesReportPromotion()
+        If isLoadingReport Then Return
 
-        If dt Is Nothing OrElse dt.Rows.Count = 0 Then
-            MessageBox.Show("ไม่มีข้อมูล")
-            Exit Sub
-        End If
+        isLoadingReport = True
+        btnPrint.Enabled = False
+        If btnPromotion IsNot Nothing Then btnPromotion.Enabled = False
+        Try
+            Dim dt As DataTable = GetSalesReportPromotion()
 
-        Using viewer As New frmReportViewer()
-            viewer.LoadDailySalesReport(dt, dtpDateFrom.Value, dtpDateTo.Value)
-            viewer.ShowDialog(Me)
-        End Using
+            If dt Is Nothing OrElse dt.Rows.Count = 0 Then
+                MessageBox.Show("ไม่มีข้อมูล")
+                Exit Sub
+            End If
+
+            Using viewer As New frmReportViewer()
+                viewer.LoadDailySalesReport(dt, dtpDateFrom.Value, dtpDateTo.Value)
+                viewer.ShowDialog(Me)
+            End Using
+        Finally
+            isLoadingReport = False
+            btnPrint.Enabled = True
+            If btnPromotion IsNot Nothing Then btnPromotion.Enabled = True
+        End Try
     End Sub
 
     Private Function GetSalesReportPromotion() As DataTable
@@ -1226,8 +1329,8 @@ Public Class frmDailySales
             sFrom.Append("LEFT JOIN SellCustomerCertified SCC ON SL.BranchNumber = SCC.BranchNumber AND SL.SellNumber = SCC.SellNumber ")
             sFrom.Append("Inner Join SellD SD on SL.BranchNumber = SD.BranchNumber AND SL.SellNumber = SD.SellNumber ")
             sFrom.Append("Inner join Product PD on SD.PN = PD.PN ")
-            sFrom.Append("OUTER APPLY (SELECT STUFF((SELECT N' / ' + X.Detail FROM (SELECT CASE WHEN EXISTS (SELECT 1 FROM CustomerFreeCup CFC WHERE CFC.SellBranchNumber = SL.BranchNumber AND CFC.SellNumber = SL.SellNumber AND CFC.FreeCupOut > 0) THEN N'แก้วฟรี' END AS Detail UNION ALL SELECT NULLIF(LTRIM(RTRIM(SP.Detail)), N'') FROM SellPromotion SP WHERE SP.BranchNumber = SL.BranchNumber AND SP.SellNumber = SL.SellNumber AND (ISNULL(SP.Detail, N'') NOT LIKE N'%แก้วฟรี%' OR EXISTS (SELECT 1 FROM CustomerFreeCup CFC2 WHERE CFC2.SellBranchNumber = SL.BranchNumber AND CFC2.SellNumber = SL.SellNumber AND CFC2.FreeCupOut > 0)) UNION ALL SELECT N'รับรองลูกค้า' WHERE EXISTS (SELECT 1 FROM SellCustomerCertified SCC WHERE SCC.BranchNumber = SL.BranchNumber AND SCC.SellNumber = SL.SellNumber)) X WHERE X.Detail IS NOT NULL AND X.Detail <> N'' FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 1, 3, N'') AS Detail) SPD ")
-            sFrom.Append("OUTER APPLY (SELECT ISNULL(SUM(CFC.FreeCupOut), 0) AS FreeCupOut, ISNULL(SUM(CFC.FreeCupOut * ISNULL(BV.FreeCupPrice, 0)), 0) AS FreeCupAmount FROM CustomerFreeCup CFC OUTER APPLY (SELECT MAX(ISNULL(SD2.Price, 0)) AS FreeCupPrice FROM SellD SD2 INNER JOIN Product PD2 ON SD2.PN = PD2.PN LEFT JOIN ProductGroup PG2 ON PG2.ID = PD2.GroupID LEFT JOIN Category CT2 ON CT2.ID = PG2.CategoryID WHERE SD2.BranchNumber = CFC.SellBranchNumber AND SD2.SellNumber = CFC.SellNumber AND (ISNULL(CT2.ID, -1) = 5 OR ISNULL(CT2.Name, '') LIKE N'%เครื่องดื่ม%' OR ISNULL(PG2.Name, '') LIKE N'%เครื่องดื่ม%' OR ISNULL(PD2.SUnit, '') LIKE N'%แก้ว%' OR ISNULL(PD2.Name, '') LIKE N'%กาแฟ%' OR ISNULL(PD2.Name, '') LIKE N'%ชา%' OR ISNULL(PD2.Name, '') LIKE N'%โกโก้%' OR ISNULL(PD2.Name, '') LIKE N'%นม%' OR ISNULL(PD2.Name, '') LIKE N'%โซดา%' OR ISNULL(PD2.Name, '') LIKE N'%สมูทตี้%' OR ISNULL(PD2.Name, '') LIKE N'%อิตาเลี่ยน%')) BV WHERE CFC.SellNumber = SL.SellNumber AND (CFC.SellBranchNumber = SL.BranchNumber OR ISNULL(CFC.SellBranchNumber, 0) = 0) AND CFC.FreeCupOut > 0) FCD ")
+            sFrom.Append(DailySalesPromotionJoinSql("SL", dateFrom, dateTo))
+            sFrom.Append(DailySalesFreeCupJoinSql("SL", dateFrom, dateTo))
 
             sWhere.Append("SL.CTime >= '" & dateFrom & "' ")
             sWhere.Append("AND SL.CTime < '" & dateTo & "' ")

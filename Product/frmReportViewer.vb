@@ -209,6 +209,24 @@ Public Class frmReportViewer
         ReportViewer1.RefreshReport()
     End Sub
 
+    Public Sub LoadMaterialUsageReport(dt As DataTable, monthDate As DateTime, branchName As String, documentNumber As String)
+        ReportViewer1.LocalReport.ReportPath = IO.Path.Combine(Application.StartupPath, "Report", "rptMaterialUsage.rdlc")
+        ReportViewer1.LocalReport.DataSources.Clear()
+        ReportViewer1.LocalReport.DataSources.Add(New ReportDataSource("dsMaterialUsage", dt))
+
+        Dim thaiCulture As CultureInfo = CultureInfo.GetCultureInfo("th-TH")
+        Dim monthTitle As String = monthDate.ToString("MMMM", thaiCulture) & " พ.ศ. " & (monthDate.Year + 543).ToString("0000", CultureInfo.InvariantCulture)
+        ReportViewer1.LocalReport.SetParameters(New ReportParameter() {
+            New ReportParameter("pMonthTitle", monthTitle),
+            New ReportParameter("pBranch", If(String.IsNullOrWhiteSpace(branchName), "ไม่ระบุสาขา", branchName)),
+            New ReportParameter("pDocument", If(String.IsNullOrWhiteSpace(documentNumber), "เอกสารตัดใช้: ยังไม่มี", documentNumber)),
+            New ReportParameter("pPrintDate", Date.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture))
+        })
+        ReportViewer1.SetDisplayMode(DisplayMode.PrintLayout)
+        ReportViewer1.ZoomMode = ZoomMode.PageWidth
+        ReportViewer1.RefreshReport()
+    End Sub
+
     Private Shared Function InventoryCountTotal(dt As DataTable, columnName As String) As Decimal
         Dim total As Decimal = 0D
         If dt Is Nothing OrElse Not dt.Columns.Contains(columnName) Then Return total

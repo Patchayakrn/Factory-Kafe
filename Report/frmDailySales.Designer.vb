@@ -34,6 +34,9 @@ Partial Class frmDailySales
         Dim DataGridViewCellStyle9 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle11 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle20 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle21 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle22 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
+        Dim DataGridViewCellStyle23 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle12 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle13 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle14 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
@@ -61,7 +64,10 @@ Partial Class frmDailySales
         Me.colCustomer = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.colTotal = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.colDiscount = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.colFreeCup = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.colNet = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.colCashReceived = New System.Windows.Forms.DataGridViewTextBoxColumn()
+        Me.colCashChange = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.colPayType = New System.Windows.Forms.DataGridViewTextBoxColumn()
         Me.pnlSummary = New DevExpress.XtraEditors.PanelControl()
         Me.Panel7 = New System.Windows.Forms.Panel()
@@ -283,7 +289,7 @@ Partial Class frmDailySales
         DataGridViewCellStyle11.WrapMode = System.Windows.Forms.DataGridViewTriState.[True]
         Me.dgvBills.ColumnHeadersDefaultCellStyle = DataGridViewCellStyle11
         Me.dgvBills.ColumnHeadersHeight = 40
-        Me.dgvBills.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.colNo, Me.colBillNo, Me.colTime, Me.colCustomer, Me.colTotal, Me.colDiscount, Me.colNet, Me.colPayType})
+        Me.dgvBills.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.colNo, Me.colBillNo, Me.colTime, Me.colCustomer, Me.colTotal, Me.colDiscount, Me.colFreeCup, Me.colNet, Me.colCashReceived, Me.colCashChange, Me.colPayType})
         Me.dgvBills.EnableHeadersVisualStyles = False
         Me.dgvBills.Location = New System.Drawing.Point(12, 51)
         Me.dgvBills.Margin = New System.Windows.Forms.Padding(4)
@@ -358,6 +364,18 @@ Partial Class frmDailySales
         Me.colDiscount.ReadOnly = True
         Me.colDiscount.Width = 150
         '
+        'colFreeCup
+        '
+        DataGridViewCellStyle21.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter
+        DataGridViewCellStyle21.Font = New System.Drawing.Font("Cordia New", 16.2!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        DataGridViewCellStyle21.ForeColor = System.Drawing.Color.FromArgb(CType(CType(22, Byte), Integer), CType(CType(101, Byte), Integer), CType(CType(52, Byte), Integer))
+        Me.colFreeCup.DefaultCellStyle = DataGridViewCellStyle21
+        Me.colFreeCup.HeaderText = "แก้วฟรี"
+        Me.colFreeCup.MinimumWidth = 6
+        Me.colFreeCup.Name = "colFreeCup"
+        Me.colFreeCup.ReadOnly = True
+        Me.colFreeCup.Width = 120
+        '
         'colNet
         '
         DataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
@@ -368,6 +386,26 @@ Partial Class frmDailySales
         Me.colNet.Name = "colNet"
         Me.colNet.ReadOnly = True
         Me.colNet.Width = 150
+        '
+        'colCashReceived
+        '
+        DataGridViewCellStyle22.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
+        Me.colCashReceived.DefaultCellStyle = DataGridViewCellStyle22
+        Me.colCashReceived.HeaderText = "รับเงินสด"
+        Me.colCashReceived.MinimumWidth = 6
+        Me.colCashReceived.Name = "colCashReceived"
+        Me.colCashReceived.ReadOnly = True
+        Me.colCashReceived.Width = 135
+        '
+        'colCashChange
+        '
+        DataGridViewCellStyle23.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleRight
+        Me.colCashChange.DefaultCellStyle = DataGridViewCellStyle23
+        Me.colCashChange.HeaderText = "เงินทอน"
+        Me.colCashChange.MinimumWidth = 6
+        Me.colCashChange.Name = "colCashChange"
+        Me.colCashChange.ReadOnly = True
+        Me.colCashChange.Width = 120
         '
         'colPayType
         '
@@ -949,6 +987,9 @@ Partial Class frmDailySales
     Friend WithEvents colCustomer As DataGridViewTextBoxColumn
     Friend WithEvents colTotal As DataGridViewTextBoxColumn
     Friend WithEvents colDiscount As DataGridViewTextBoxColumn
+    Friend WithEvents colFreeCup As DataGridViewTextBoxColumn
     Friend WithEvents colNet As DataGridViewTextBoxColumn
+    Friend WithEvents colCashReceived As DataGridViewTextBoxColumn
+    Friend WithEvents colCashChange As DataGridViewTextBoxColumn
     Friend WithEvents colPayType As DataGridViewTextBoxColumn
 End Class

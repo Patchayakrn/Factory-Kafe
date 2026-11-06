@@ -289,7 +289,7 @@ Public Class frmBuy
             MessageBox.Show("ผู้ใช้ปัจจุบันไม่มีสิทธิ์แก้ไขรายการใบซื้อ", "สิทธิ์ไม่เพียงพอ", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Return False
         End If
-        If buyNumber <= 0 OrElse branchNumber <> branchNumber Then Return False
+        If buyNumber <= 0 OrElse branchNumber <= 0 Then Return False
 
         Try
             increaseOnlyAfterSale = False

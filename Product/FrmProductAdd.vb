@@ -6,6 +6,7 @@ Public Class FrmProductAdd
     Private Const BranchNumber As Integer = 1
     Private Const BeverageGroupKeyword As String = "เครื่องดื่ม"
     Private selectedPicturePath As String = ""
+    Private originalProductName As String = ""
     Public Property CloneSourcePN As Long
     Public Property EditProductPN As Long
     Public Property IsBeverageFromProductList As Boolean
@@ -94,6 +95,8 @@ Public Class FrmProductAdd
     Private Sub LoadLookupData()
         LoadComboFromSql(cbProductGroup,
                          "SELECT ID, RTRIM(Name) AS Name FROM ProductGroup WHERE Status IS NULL ORDER BY Name", False)
+        LoadComboFromSql(cbProductCategory,
+                         "SELECT ID, RTRIM(Name) AS Name FROM Category WHERE Status IS NULL ORDER BY Name", True)
         LoadComboFromSql(KryptonComboBox1,
                          "SELECT ID, RTRIM(Name) AS Name FROM Brand WHERE Status IS NULL ORDER BY Name", True)
         LoadComboFromSql(KryptonComboBox2,
@@ -176,8 +179,9 @@ Public Class FrmProductAdd
             "RTRIM(P.MDiscountP1String) AS MDiscountP1String,RTRIM(P.MDiscountP2String) AS MDiscountP2String," &
             "RTRIM(P.MDiscountP3String) AS MDiscountP3String,P.GroupID,P.BrandID,RTRIM(P.MainSupplier) AS MainSupplier," &
             "P.VatStatus,P.CanCollectPoint,P.Point,P.HotProduct,P.Status,RTRIM(P.PicName) AS PicName,RTRIM(P.Comment) AS Comment," &
-            "RTRIM(PL.Location) AS Location,PA.NumAlert,PA.NumMustHave " &
+            "PG.CategoryID AS CategoryID,RTRIM(PL.Location) AS Location,PA.NumAlert,PA.NumMustHave " &
             "FROM Product P " &
+            "LEFT JOIN ProductGroup PG ON PG.ID=P.GroupID " &
             "LEFT JOIN ProductLocation PL ON PL.PN=P.PN AND PL.BranchNumber=@BranchNumber " &
             "LEFT JOIN ProductAlert PA ON PA.PN=P.PN AND PA.BranchNumber=@BranchNumber AND PA.Status IS NULL " &
             "WHERE P.PN=@PN"
@@ -198,6 +202,7 @@ Public Class FrmProductAdd
                     btnSave.Text = If(isEditMode, "บันทึกการแก้ไข", "บันทึก")
                     tbProductCode.Text = ReaderText(reader, "ProductCode")
                     tbName.Text = ReaderText(reader, "Name")
+                    originalProductName = tbName.Text.Trim()
                     tbName2.Text = ReaderText(reader, "Name2")
                     tbBarcode.Text = ReaderText(reader, "Barcode")
                     chkEditAutoCode.Checked = False
@@ -239,6 +244,7 @@ Public Class FrmProductAdd
                     cbCanCollectPoint.Checked = ReaderBoolean(reader, "CanCollectPoint")
                     cbHotProduct.Checked = ReaderBoolean(reader, "HotProduct")
                     SelectComboByID(cbProductGroup, ReaderInteger(reader, "GroupID"))
+                    SelectComboByID(cbProductCategory, ReaderInteger(reader, "CategoryID"))
                     SelectComboByID(KryptonComboBox1, ReaderInteger(reader, "BrandID"))
                     SelectComboByID(KryptonComboBox2, ReaderInteger(reader, "VolumeID"))
                     SelectComboByText(cbSUnit, ReaderText(reader, "SUnit"))
@@ -460,7 +466,9 @@ Public Class FrmProductAdd
                     If IsDuplicateValue(conn, tr, "Barcode", tbBarcode.Text, pn) Then
                         Throw New ApplicationException("Barcode นี้มีอยู่แล้ว")
                     End If
-                    If HasDuplicateName(conn, tr, tbName.Text, pn) Then
+                    Dim nameChanged As Boolean = Not isEditMode OrElse
+                                                Not String.Equals(tbName.Text.Trim(), originalProductName, StringComparison.Ordinal)
+                    If nameChanged AndAlso HasDuplicateName(conn, tr, tbName.Text, pn) Then
                         Dim answer As DialogResult = MessageBox.Show(
                             "มีชื่อสินค้านี้อยู่แล้ว คุณยังต้องการเพิ่มซ้ำหรือไม่?",
                             "ยืนยันชื่อสินค้าซ้ำ", MessageBoxButtons.YesNo, MessageBoxIcon.Warning,
@@ -473,6 +481,7 @@ Public Class FrmProductAdd
                     Else
                         InsertProduct(conn, tr, pn)
                     End If
+                    SaveProductGroupCategory(conn, tr)
                     SaveProductLocation(conn, tr, pn)
                     SaveProductAlert(conn, tr, pn)
                     tr.Commit()
@@ -658,6 +667,21 @@ Public Class FrmProductAdd
             If cmd.ExecuteNonQuery() <> 1 Then
                 Throw New ApplicationException("ไม่พบสินค้าที่ต้องการแก้ไข")
             End If
+        End Using
+    End Sub
+
+    Private Sub SaveProductGroupCategory(conn As SqlConnection, tr As SqlTransaction)
+        Dim groupID As Integer = SelectedComboID(cbProductGroup)
+        If groupID <= 0 Then Return
+
+        Using cmd As New SqlCommand(
+            "UPDATE ProductGroup SET CategoryID=@CategoryID,UONumber=@OfficerNumber,UTime=GETDATE() WHERE ID=@GroupID", conn, tr)
+            cmd.Parameters.Add("@GroupID", SqlDbType.Int).Value = groupID
+            cmd.Parameters.Add("@CategoryID", SqlDbType.Int).Value = If(SelectedComboID(cbProductCategory) > 0,
+                                                                          CType(SelectedComboID(cbProductCategory), Object),
+                                                                          DBNull.Value)
+            cmd.Parameters.Add("@OfficerNumber", SqlDbType.Int).Value = LoginOfficerNumber()
+            cmd.ExecuteNonQuery()
         End Using
     End Sub
 

@@ -304,6 +304,7 @@ Public Class frmBuyHistory
                         "LEFT JOIN Stock s WITH (UPDLOCK,HOLDLOCK) ON s.BranchNumber=bs.BranchNumber AND s.BillType=0 " &
                         "AND s.BillNumber=bs.BuyNumber AND s.PN=bs.PN " &
                         "WHERE bs.BranchNumber=@BranchNumber AND bs.BuyNumber=@BuyNumber"
+                    Dim usedStock As Boolean = False
                     Using checkStock As New SqlCommand(stockCheckSql, conn, tr)
                         checkStock.Parameters.Add("@BranchNumber", SqlDbType.Int).Value = branchNumber
                         checkStock.Parameters.Add("@BuyNumber", SqlDbType.Int).Value = buyNumber
@@ -311,11 +312,15 @@ Public Class frmBuyHistory
                             While reader.Read()
                                 If reader("StockPN") Is DBNull.Value OrElse
                                    Convert.ToDecimal(reader("CurrentQuantity"), CultureInfo.InvariantCulture) < Convert.ToDecimal(reader("BuyQuantity"), CultureInfo.InvariantCulture) Then
-                                    Throw New InvalidOperationException("ใบซื้อนี้มีสินค้าที่ถูกขายหรือตัดสต๊อกไปแล้ว จึงยกเลิกทั้งใบไม่ได้")
+                                    usedStock = True
                                 End If
                             End While
                         End Using
                     End Using
+
+                    If usedStock Then
+                        Throw New InvalidOperationException("ใบซื้อนี้มีสินค้าที่ถูกขายหรือตัดสต๊อกไปแล้ว จึงยกเลิกทั้งใบไม่ได้")
+                    End If
 
                     Using deleteStock As New SqlCommand("DELETE FROM Stock WHERE BranchNumber=@BranchNumber AND BillType=0 AND BillNumber=@BuyNumber", conn, tr)
                         deleteStock.Parameters.Add("@BranchNumber", SqlDbType.Int).Value = branchNumber
@@ -346,4 +351,5 @@ Public Class frmBuyHistory
     Private Function CanCancelBuy() As Boolean
         Return PermissionService.HasPermission("Buy.Cancel")
     End Function
+
 End Class

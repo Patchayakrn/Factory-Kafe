@@ -200,6 +200,9 @@
     <Compile Include="Main\Fmailvb.Designer.vb">
       <DependentUpon>Fmailvb.vb</DependentUpon>
     </Compile>
+    <Compile Include="Main\frmClosingSummary.vb">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Include="Main\Fmailvb.vb">
       <SubType>Form</SubType>
     </Compile>
@@ -322,6 +325,12 @@
     </Compile>
     <Compile Include="Product\frmMaterialStock.Designer.vb">
       <DependentUpon>frmMaterialStock.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\frmStockCheck.Designer.vb">
+      <DependentUpon>frmStockCheck.vb</DependentUpon>
+    </Compile>
+    <Compile Include="Product\frmStockCheck.vb">
+      <SubType>Form</SubType>
     </Compile>
     <Compile Include="Product\fInventoryCount.Designer.vb">
       <DependentUpon>fInventoryCount.vb</DependentUpon>
@@ -505,6 +514,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Report\rptInventoryCount.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Report\rptMaterialUsage.rdlc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <EmbeddedResource Include="Product\frmMaterialDrinkAdd.resx">

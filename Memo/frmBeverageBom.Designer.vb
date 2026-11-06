@@ -18,6 +18,8 @@ Partial Class frmBeverageBom
     Friend WithEvents pnlActions As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents lblFinishedProduct As System.Windows.Forms.Label
     Friend WithEvents lblProductCode As System.Windows.Forms.Label
+    Friend WithEvents lblEffectiveFrom As System.Windows.Forms.Label
+    Friend WithEvents dtpRecipeDate As System.Windows.Forms.DateTimePicker
     Friend WithEvents colLineNo As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents colMaterialID As System.Windows.Forms.DataGridViewTextBoxColumn
     Friend WithEvents colProductCode As System.Windows.Forms.DataGridViewTextBoxColumn
@@ -60,6 +62,8 @@ Partial Class frmBeverageBom
         Me.pnlTop = New System.Windows.Forms.TableLayoutPanel()
         Me.lblFinishedProduct = New System.Windows.Forms.Label()
         Me.lblProductCode = New System.Windows.Forms.Label()
+        Me.lblEffectiveFrom = New System.Windows.Forms.Label()
+        Me.dtpRecipeDate = New System.Windows.Forms.DateTimePicker()
         Me.pnlActions = New System.Windows.Forms.FlowLayoutPanel()
         CType(Me.gridMaterials, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.pnlBottom.SuspendLayout()
@@ -91,6 +95,29 @@ Partial Class frmBeverageBom
         Me.txtFinishedProduct.Size = New System.Drawing.Size(338, 44)
         Me.txtFinishedProduct.TabIndex = 3
         '
+        'lblEffectiveFrom
+        '
+        Me.lblEffectiveFrom.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.lblEffectiveFrom.Font = New System.Drawing.Font("Cordia New", 16.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.lblEffectiveFrom.Location = New System.Drawing.Point(21, 56)
+        Me.lblEffectiveFrom.Name = "lblEffectiveFrom"
+        Me.lblEffectiveFrom.Size = New System.Drawing.Size(139, 44)
+        Me.lblEffectiveFrom.TabIndex = 5
+        Me.lblEffectiveFrom.Text = "สูตรเริ่มใช้วันที่:"
+        Me.lblEffectiveFrom.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
+        '
+        'dtpRecipeDate
+        '
+        Me.dtpRecipeDate.CustomFormat = "dd/MM/yyyy"
+        Me.dtpRecipeDate.Dock = System.Windows.Forms.DockStyle.Left
+        Me.dtpRecipeDate.Font = New System.Drawing.Font("Cordia New", 16.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.dtpRecipeDate.Format = System.Windows.Forms.DateTimePickerFormat.Custom
+        Me.dtpRecipeDate.Location = New System.Drawing.Point(166, 59)
+        Me.dtpRecipeDate.Name = "dtpRecipeDate"
+        Me.dtpRecipeDate.Size = New System.Drawing.Size(220, 44)
+        Me.dtpRecipeDate.TabIndex = 6
+        Me.dtpRecipeDate.Value = System.DateTime.Today
+        '
         'gridMaterials
         '
         Me.gridMaterials.AllowUserToAddRows = False
@@ -100,7 +127,7 @@ Partial Class frmBeverageBom
         Me.gridMaterials.ColumnHeadersHeight = 38
         Me.gridMaterials.Columns.AddRange(New System.Windows.Forms.DataGridViewColumn() {Me.LineNo, Me.MaterialID, Me.ProductCode, Me.ProductName, Me.Number, Me.LUnit, Me.NumSPerLUnit})
         Me.gridMaterials.Dock = System.Windows.Forms.DockStyle.Fill
-        Me.gridMaterials.Location = New System.Drawing.Point(0, 238)
+        Me.gridMaterials.Location = New System.Drawing.Point(0, 266)
         Me.gridMaterials.Name = "gridMaterials"
         Me.gridMaterials.RowHeadersVisible = False
         Me.gridMaterials.RowHeadersWidth = 51
@@ -293,15 +320,18 @@ Partial Class frmBeverageBom
         Me.pnlTop.Controls.Add(Me.cboFinishedProduct, 1, 0)
         Me.pnlTop.Controls.Add(Me.lblProductCode, 2, 0)
         Me.pnlTop.Controls.Add(Me.txtFinishedProduct, 3, 0)
-        Me.pnlTop.Controls.Add(Me.lblRecipeStatus, 0, 1)
+        Me.pnlTop.Controls.Add(Me.lblEffectiveFrom, 0, 1)
+        Me.pnlTop.Controls.Add(Me.dtpRecipeDate, 1, 1)
+        Me.pnlTop.Controls.Add(Me.lblRecipeStatus, 0, 2)
         Me.pnlTop.Dock = System.Windows.Forms.DockStyle.Top
         Me.pnlTop.Location = New System.Drawing.Point(0, 52)
         Me.pnlTop.Name = "pnlTop"
         Me.pnlTop.Padding = New System.Windows.Forms.Padding(18, 12, 18, 8)
-        Me.pnlTop.RowCount = 2
+        Me.pnlTop.RowCount = 3
+        Me.pnlTop.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
         Me.pnlTop.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 44.0!))
         Me.pnlTop.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 28.0!))
-        Me.pnlTop.Size = New System.Drawing.Size(1100, 125)
+        Me.pnlTop.Size = New System.Drawing.Size(1100, 153)
         Me.pnlTop.TabIndex = 2
         '
         'lblFinishedProduct
@@ -332,7 +362,7 @@ Partial Class frmBeverageBom
         Me.pnlActions.Controls.Add(Me.btnAddMaterial)
         Me.pnlActions.Controls.Add(Me.btnRemoveMaterial)
         Me.pnlActions.Dock = System.Windows.Forms.DockStyle.Top
-        Me.pnlActions.Location = New System.Drawing.Point(0, 177)
+        Me.pnlActions.Location = New System.Drawing.Point(0, 205)
         Me.pnlActions.Name = "pnlActions"
         Me.pnlActions.Padding = New System.Windows.Forms.Padding(18, 5, 18, 5)
         Me.pnlActions.Size = New System.Drawing.Size(1100, 61)

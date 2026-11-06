@@ -15,10 +15,11 @@ Partial Class frmMaterialUsage
     Friend WithEvents btnSearch As System.Windows.Forms.Button
     Friend WithEvents btnAutoAdjust As System.Windows.Forms.Button
     Friend WithEvents btnRefresh As System.Windows.Forms.Button
+    Friend WithEvents btnPrint As System.Windows.Forms.Button
     Friend WithEvents infoPanel As System.Windows.Forms.FlowLayoutPanel
     Friend WithEvents lblDoc As System.Windows.Forms.Label
     Friend WithEvents lblSummary As System.Windows.Forms.Label
-    Friend WithEvents grid As System.Windows.Forms.DataGridView
+    Friend WithEvents grid As MaterialUsageGrid
 
     <System.Diagnostics.DebuggerNonUserCode()>
     Protected Overrides Sub Dispose(disposing As Boolean)
@@ -44,10 +45,11 @@ Partial Class frmMaterialUsage
         Me.btnSearch = New System.Windows.Forms.Button()
         Me.btnAutoAdjust = New System.Windows.Forms.Button()
         Me.btnRefresh = New System.Windows.Forms.Button()
+        Me.btnPrint = New System.Windows.Forms.Button()
         Me.infoPanel = New System.Windows.Forms.FlowLayoutPanel()
         Me.lblDoc = New System.Windows.Forms.Label()
         Me.lblSummary = New System.Windows.Forms.Label()
-        Me.grid = New System.Windows.Forms.DataGridView()
+        Me.grid = New MaterialUsageGrid()
         Me.rootLayout.SuspendLayout()
         Me.filterPanel.SuspendLayout()
         CType(Me.nudYear, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -78,11 +80,13 @@ Partial Class frmMaterialUsage
         '
         'titleLabel
         '
+        Me.titleLabel.BackColor = System.Drawing.Color.FromArgb(CType(CType(230, Byte), Integer), CType(CType(242, Byte), Integer), CType(CType(252, Byte), Integer))
         Me.titleLabel.Dock = System.Windows.Forms.DockStyle.Fill
         Me.titleLabel.Font = New System.Drawing.Font("Cordia New", 25.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(222, Byte))
         Me.titleLabel.ForeColor = System.Drawing.Color.FromArgb(CType(CType(17, Byte), Integer), CType(CType(76, Byte), Integer), CType(CType(130, Byte), Integer))
         Me.titleLabel.Location = New System.Drawing.Point(19, 16)
         Me.titleLabel.Name = "titleLabel"
+        Me.titleLabel.Padding = New System.Windows.Forms.Padding(12, 0, 0, 0)
         Me.titleLabel.Size = New System.Drawing.Size(1162, 58)
         Me.titleLabel.TabIndex = 0
         Me.titleLabel.Text = "คำนวณการใช้วัตถุดิบรายเดือน"
@@ -90,6 +94,7 @@ Partial Class frmMaterialUsage
         '
         'filterPanel
         '
+        Me.filterPanel.BackColor = System.Drawing.Color.White
         Me.filterPanel.Controls.Add(Me.branchLabel)
         Me.filterPanel.Controls.Add(Me.cboBranch)
         Me.filterPanel.Controls.Add(Me.monthLabel)
@@ -99,6 +104,7 @@ Partial Class frmMaterialUsage
         Me.filterPanel.Controls.Add(Me.btnSearch)
         Me.filterPanel.Controls.Add(Me.btnAutoAdjust)
         Me.filterPanel.Controls.Add(Me.btnRefresh)
+        Me.filterPanel.Controls.Add(Me.btnPrint)
         Me.filterPanel.Dock = System.Windows.Forms.DockStyle.Fill
         Me.filterPanel.Location = New System.Drawing.Point(19, 77)
         Me.filterPanel.Name = "filterPanel"
@@ -210,9 +216,24 @@ Partial Class frmMaterialUsage
         Me.btnRefresh.Text = "รีเฟรช"
         Me.btnRefresh.UseVisualStyleBackColor = False
         '
+        'btnPrint
+        '
+        Me.btnPrint.BackColor = System.Drawing.Color.FromArgb(CType(CType(126, Byte), Integer), CType(CType(87, Byte), Integer), CType(CType(194, Byte), Integer))
+        Me.btnPrint.FlatAppearance.BorderSize = 0
+        Me.btnPrint.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.btnPrint.Font = New System.Drawing.Font("Cordia New", 16.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(222, Byte))
+        Me.btnPrint.ForeColor = System.Drawing.Color.White
+        Me.btnPrint.Location = New System.Drawing.Point(1215, 6)
+        Me.btnPrint.Margin = New System.Windows.Forms.Padding(18, 0, 0, 0)
+        Me.btnPrint.Name = "btnPrint"
+        Me.btnPrint.Size = New System.Drawing.Size(130, 40)
+        Me.btnPrint.TabIndex = 9
+        Me.btnPrint.Text = "พิมพ์รายงาน"
+        Me.btnPrint.UseVisualStyleBackColor = False
         '
         'infoPanel
         '
+        Me.infoPanel.BackColor = System.Drawing.Color.White
         Me.infoPanel.Controls.Add(Me.lblDoc)
         Me.infoPanel.Controls.Add(Me.lblSummary)
         Me.infoPanel.Dock = System.Windows.Forms.DockStyle.Fill
@@ -247,9 +268,10 @@ Partial Class frmMaterialUsage
         Me.grid.AllowUserToAddRows = False
         Me.grid.AllowUserToDeleteRows = False
         Me.grid.BackgroundColor = System.Drawing.Color.White
+        Me.grid.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.SingleHorizontal
         DataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft
         DataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(CType(CType(75, Byte), Integer), CType(CType(111, Byte), Integer), CType(CType(130, Byte), Integer))
-        DataGridViewCellStyle1.Font = New System.Drawing.Font("Cordia New", 16.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(222, Byte))
+        DataGridViewCellStyle1.Font = New System.Drawing.Font("Cordia New", 16.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(222, Byte))
         DataGridViewCellStyle1.ForeColor = System.Drawing.Color.White
         DataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight
         DataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText
@@ -258,6 +280,7 @@ Partial Class frmMaterialUsage
         Me.grid.ColumnHeadersHeight = 42
         Me.grid.Dock = System.Windows.Forms.DockStyle.Fill
         Me.grid.EnableHeadersVisualStyles = False
+        Me.grid.GridColor = System.Drawing.Color.FromArgb(CType(CType(205, Byte), Integer), CType(CType(213, Byte), Integer), CType(CType(220, Byte), Integer))
         Me.grid.Location = New System.Drawing.Point(19, 177)
         Me.grid.Name = "grid"
         Me.grid.ReadOnly = True

@@ -130,7 +130,8 @@ Partial Class fCustomer
         'chkCustomerCertified
         '
         Me.chkCustomerCertified.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Right), System.Windows.Forms.AnchorStyles)
-        Me.chkCustomerCertified.Location = New System.Drawing.Point(245, 620)
+        'วางใต้ช่องสิทธิ์แก้วฟรี เพื่อไม่ให้ทับกับแต้มสะสมรอบนี้/จำนวนสิทธิ์
+        Me.chkCustomerCertified.Location = New System.Drawing.Point(245, 690)
         Me.chkCustomerCertified.Name = "chkCustomerCertified"
         Me.chkCustomerCertified.Size = New System.Drawing.Size(123, 43)
         Me.chkCustomerCertified.StateNormal.ShortText.Color1 = System.Drawing.Color.Fuchsia

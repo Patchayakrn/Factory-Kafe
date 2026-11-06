@@ -123,6 +123,9 @@ Public Class fsell
     Private useFreeCupInCurrentBill As Boolean
     Private freeCupDiscountApplied As Decimal = 0D
     Private freeCupUseQty As Integer = 0
+    Private freeCupSelectedItems As New List(Of FreeCupSelectionItem)()
+    Private freeCupOriginalRowDiscounts As New Dictionary(Of DataRow, Decimal)()
+    Private freeCupOriginalRowDiscountPercents As New Dictionary(Of DataRow, Decimal)()
     Private freeCupCheckboxUpdating As Boolean
     Public Property CustomerDisplayForm As frmCustomerDisplay
 
@@ -152,6 +155,7 @@ Public Class fsell
         EnsureSellPromotionDetailColumn()
         EnsureSellCustomerCertifiedTable()
         EnsureCustomerFreeCupTable()
+        EnsureSellCashColumns()
         AddHandler pnlHeader2.Paint, AddressOf pnlHeader_Paint
         KryptonDataGridView1.ScrollBars = ScrollBars.Both
         customerId = 0
@@ -391,12 +395,12 @@ Public Class fsell
                 card.HotBarcode = item.HotBarcode
                 card.IcedBarcode = item.IcedBarcode
                 card.BlendedBarcode = item.BlendedBarcode
-                 card.SignatureBarcode = item.SignatureBarcode
-                 card.ProductGroupName = item.ProductGroupName
-                 card.SkipBeverageOption = String.Equals(item.ProductGroupName.Trim(), "อื่นๆ", StringComparison.OrdinalIgnoreCase)
-                 card.SetSelectionVisualState(customerSelectionConfirmed)
-                 AddHandler card.CardClicked, AddressOf BeverageCard_CardClicked
-                 menuPanel.Controls.Add(card)
+                card.SignatureBarcode = item.SignatureBarcode
+                card.ProductGroupName = item.ProductGroupName
+                card.SkipBeverageOption = String.Equals(item.ProductGroupName.Trim(), "อื่นๆ", StringComparison.OrdinalIgnoreCase)
+                card.SetSelectionVisualState(customerSelectionConfirmed)
+                AddHandler card.CardClicked, AddressOf BeverageCard_CardClicked
+                menuPanel.Controls.Add(card)
             Next
         Catch ex As Exception
             MessageBox.Show("โหลดเมนูเครื่องดื่มไม่สำเร็จ: " & ex.Message, "เมนูเครื่องดื่ม", MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -1024,11 +1028,11 @@ Public Class fsell
                 Return
             End If
             Dim selectedQty As Integer = selectedItems.Count
-            'สิทธิ์แก้วฟรีใช้สำหรับตัด/บันทึกสิทธิ์เท่านั้น
-            'ราคาเครื่องดื่มยังต้องคิดเงินตามปกติ ห้ามหักจนเป็น 0 บาท
-            freeCupDiscountApplied = 0D
             freeCupUseQty = selectedQty
+            freeCupSelectedItems = selectedItems.Where(Function(item) item IsNot Nothing AndAlso item.IsEligible).ToList()
             useFreeCupInCurrentBill = True
+            freeCupDiscountApplied = ApplyFreeCupDiscountToBill(freeCupSelectedItems)
+            CalculateSummary()
             SetFreeCupCheckbox(True)
             AppendPromotionToComment("ใช้สิทธิแก้วฟรี " & selectedQty.ToString("N0") & " ใบ")
             UpdateFreeCupPanel()
@@ -1040,8 +1044,10 @@ Public Class fsell
     Private Sub CancelFreeCupSelection()
         'การยกเลิกเป็นเพียงการคืนสถานะของบิลปัจจุบัน
         'ยังไม่บันทึก FreeCupOut จนกว่าจะชำระเงินและบันทึกบิลสำเร็จ
+        RestoreFreeCupDiscountFromBill()
         useFreeCupInCurrentBill = False
         freeCupUseQty = 0
+        freeCupSelectedItems.Clear()
         SetFreeCupCheckbox(False)
         RemoveAppliedFreeCupDiscount()
         RemoveFreeCupComment()
@@ -1137,8 +1143,10 @@ Public Class fsell
         Dim availableFreeCup As Integer = GetMaxUsableFreeCupQty(cupQty, oldCupBalance, oldFreeCupBalance)
 
         If availableFreeCup <= 0 Then
+            RestoreFreeCupDiscountFromBill()
             useFreeCupInCurrentBill = False
             freeCupUseQty = 0
+            freeCupSelectedItems.Clear()
             SetFreeCupCheckbox(False)
             RemoveAppliedFreeCupDiscount()
             RemoveFreeCupComment()
@@ -1201,10 +1209,11 @@ Public Class fsell
             Return
         End If
 
-        'บัตรกระดาษใช้ยืนยันการใช้สิทธิ์ แต่ไม่ลดราคาเครื่องดื่ม
-        freeCupDiscountApplied = 0D
         freeCupUseQty = 1
+        freeCupSelectedItems = New List(Of FreeCupSelectionItem) From {eligibleItem}
         useFreeCupInCurrentBill = True
+        freeCupDiscountApplied = ApplyFreeCupDiscountToBill(freeCupSelectedItems)
+        CalculateSummary()
         AppendPromotionToComment("ใช้สิทธิแก้วฟรี 1 ใบ (บัตรกระดาษ)")
     End Sub
 
@@ -1242,6 +1251,84 @@ Public Class fsell
         Dim currentDiscount As Decimal = 0D
         Decimal.TryParse(tbDCCash.Text, currentDiscount)
         tbDCCash.Text = Math.Max(0D, currentDiscount - appliedAmount).ToString("N2")
+    End Sub
+
+    Private Function ApplyFreeCupDiscountToBill(selectedItems As IEnumerable(Of FreeCupSelectionItem)) As Decimal
+        freeCupOriginalRowDiscounts.Clear()
+        freeCupOriginalRowDiscountPercents.Clear()
+        If dtSell Is Nothing OrElse selectedItems Is Nothing Then Return 0D
+
+        Dim selectedByProduct As New Dictionary(Of Long, Integer)()
+        For Each item As FreeCupSelectionItem In selectedItems
+            If item Is Nothing OrElse Not item.IsEligible OrElse item.ProductNumber <= 0 Then Continue For
+            If selectedByProduct.ContainsKey(item.ProductNumber) Then
+                selectedByProduct(item.ProductNumber) += 1
+            Else
+                selectedByProduct.Add(item.ProductNumber, 1)
+            End If
+        Next
+
+        For Each row As DataRow In dtSell.Rows
+            If row.RowState = DataRowState.Deleted Then Continue For
+
+            Dim pn As Long = ReadLong(row, "PN")
+            If Not selectedByProduct.ContainsKey(pn) Then Continue For
+
+            Dim qty As Decimal = ReadDecimal(row, "Qty")
+            Dim price As Decimal = ReadDecimal(row, "Price")
+            If qty <= 0D OrElse price <= 0D Then Continue For
+
+            Dim freeQty As Decimal = Math.Min(qty, selectedByProduct(pn))
+            If freeQty <= 0D Then Continue For
+
+            Dim originalDiscount As Decimal = ReadDecimal(row, "Discount")
+            freeCupOriginalRowDiscounts(row) = originalDiscount
+            freeCupOriginalRowDiscountPercents(row) = ReadDecimal(row, "DiscountPer")
+
+            Dim rowTotal As Decimal = qty * price
+            'สิทธิ์แก้วฟรีไม่ใช่ส่วนลดสินค้า: ต้องคิดราคาสินค้าปกติ
+            'และไม่ให้โปรโมชั่นเดิมของรายการที่เลือกติดไปกับรายการแก้วฟรี
+            row("Discount") = 0D
+            row("DiscountPer") = 0D
+            row("Pricediscount") = price
+            row("Amount") = rowTotal
+
+            selectedByProduct(pn) -= CInt(Math.Floor(freeQty))
+        Next
+
+        'ไม่ส่งยอดแก้วฟรีกลับไปเป็นส่วนลดหัวบิล
+        Return 0D
+    End Function
+
+    Private Sub RestoreFreeCupDiscountFromBill()
+        If freeCupOriginalRowDiscounts Is Nothing OrElse freeCupOriginalRowDiscounts.Count = 0 Then
+            freeCupOriginalRowDiscountPercents.Clear()
+            freeCupDiscountApplied = 0D
+            Return
+        End If
+
+        For Each pair As KeyValuePair(Of DataRow, Decimal) In freeCupOriginalRowDiscounts
+            Dim row As DataRow = pair.Key
+            If row Is Nothing OrElse row.RowState = DataRowState.Deleted Then Continue For
+
+            Dim qty As Decimal = ReadDecimal(row, "Qty")
+            Dim price As Decimal = ReadDecimal(row, "Price")
+            Dim originalPercent As Decimal = 0D
+            If freeCupOriginalRowDiscountPercents.ContainsKey(row) Then
+                originalPercent = freeCupOriginalRowDiscountPercents(row)
+            End If
+            Dim gross As Decimal = qty * price
+            Dim restoredDiscount As Decimal = pair.Value + (gross * originalPercent / 100D)
+            row("Discount") = pair.Value
+            row("DiscountPer") = originalPercent
+            row("Pricediscount") = If(qty > 0D, Math.Max(0D, price - (restoredDiscount / qty)), price)
+            row("Amount") = Math.Max(0D, gross - restoredDiscount)
+        Next
+
+        freeCupOriginalRowDiscounts.Clear()
+        freeCupOriginalRowDiscountPercents.Clear()
+        freeCupDiscountApplied = 0D
+        CalculateSummary()
     End Sub
 
     Private Sub SetSummaryNumericAlignment()
@@ -1586,6 +1673,26 @@ Public Class fsell
         End Try
     End Sub
 
+    Private Sub EnsureSellCashColumns()
+        Try
+            Using conn As SqlConnection = modVariable.OpenConnection()
+                Dim sql As String =
+                    "IF OBJECT_ID(N'dbo.Sell', N'U') IS NOT NULL " &
+                    "BEGIN " &
+                    "IF COL_LENGTH(N'dbo.Sell', N'CashReceived') IS NULL ALTER TABLE dbo.Sell ADD CashReceived MONEY NULL; " &
+                    "IF COL_LENGTH(N'dbo.Sell', N'CashChange') IS NULL ALTER TABLE dbo.Sell ADD CashChange MONEY NULL; " &
+                    "END"
+
+                Using cmd As New SqlCommand(sql, conn)
+                    cmd.CommandType = CommandType.Text
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+        Catch ex As Exception
+            'รองรับฐานข้อมูลรุ่นเก่า: ถ้าเพิ่มคอลัมน์ไม่ได้ ให้ระบบขายเดิมยังเปิดได้
+        End Try
+    End Sub
+
     Private Sub InsertSellCustomerCertified(branchNumber As Integer, sellNumber As Integer, payName As String)
         If Not customerIsCertified Then Exit Sub
 
@@ -1782,7 +1889,11 @@ Public Class fsell
 
     Private Sub ShowdatainGrid()
         useFreeCupInCurrentBill = False
+        freeCupDiscountApplied = 0D
         freeCupUseQty = 0
+        freeCupSelectedItems.Clear()
+        freeCupOriginalRowDiscounts.Clear()
+        freeCupOriginalRowDiscountPercents.Clear()
         dtSell = New DataTable()
         dtSell.Columns.Add("No", GetType(Integer))
         dtSell.Columns.Add("PN", GetType(Long))
@@ -2169,7 +2280,7 @@ Public Class fsell
             End If
 
             rowView("Qty") = qty
-            rowView("Amount") = (qty * price) - discount
+            rowView("Amount") = Math.Max(0D, (qty * price) - discount)
             rowView.EndEdit()
 
             KryptonDataGridView1.Refresh()
@@ -2372,6 +2483,15 @@ Public Class fsell
         selectedPromotionName = ""
         tbDCPercen.Text = "0.00"
         tbDCCash.Text = "0.00"
+
+        If useFreeCupInCurrentBill Then
+            RestoreFreeCupDiscountFromBill()
+            useFreeCupInCurrentBill = False
+            freeCupUseQty = 0
+            freeCupSelectedItems.Clear()
+            SetFreeCupCheckbox(False)
+            RemoveFreeCupComment()
+        End If
     End Sub
 
 
@@ -2710,7 +2830,7 @@ Public Class fsell
                 Dim fields As New List(Of String) From {
                 "BranchNumber", "ClientNumber", "SellNumber", "DocNumber", "EditCount",
                 "CustomerNumber", "OfficerNumber", "BillNumber", "Credit", "VatType",
-                "PayType", "Cash", "DCPMT", "Money", "DCPercent",
+                "PayType", "Cash", "CashReceived", "CashChange", "DCPMT", "Money", "DCPercent",
                 "DCCash", "DiscountMoney", "ChargePercent", "ChargeMoney", "AdjustMoney",
                 "PercentVat", "DateTime", "Paid", "PaidMoney", "Profit",
                 "ProfitVat", "PriceNV", "PriceV", "PriceBV", "PriceVat",
@@ -2742,6 +2862,8 @@ Public Class fsell
 
                 data.Add(payType.ToString())               ' PayType
                 data.Add(dPayCash.ToString())              ' Cash
+                data.Add(If(payType = 1, dCashReceiveMoney, 0D).ToString()) ' CashReceived
+                data.Add(If(payType = 1, dCashChangeMoney, 0D).ToString())   ' CashChange
                 data.Add(0.00)                             ' DCPMT  (คุณใส่ซ้ำอยู่ เดี๋ยวปรับเองได้)
                 data.Add(dPayCash.ToString())              ' Money (เช็คให้ตรงความหมาย)
                 data.Add(tbDCPercen.Text.Trim())           ' DCPercent
@@ -3074,6 +3196,21 @@ Public Class fsell
         If qty <= 0D Then Return
 
         Dim negativeQty As Decimal = -qty
+        'เครื่องดื่ม/สินค้าที่ไม่มีล็อตสต็อกอาจปรากฏซ้ำหลายบรรทัดในบิลเดียวกัน
+        'จึงต้องรวมจำนวนในแถวเดิมก่อน ไม่ INSERT ซ้ำจนชน PK_Stock
+        Using updateCmd As New SqlCommand(
+            "UPDATE Stock SET NumberNS = ISNULL(NumberNS, 0) + @NumberNS, " &
+            "Number = ISNULL(Number, 0) + @Number " &
+            "WHERE BranchNumber = @BranchNumber AND BillType = 5 " &
+            "AND BillNumber = @SellNumber AND PN = @PN", conn, tr)
+            updateCmd.Parameters.Add("@NumberNS", SqlDbType.Decimal).Value = negativeQty
+            updateCmd.Parameters.Add("@Number", SqlDbType.Decimal).Value = negativeQty
+            updateCmd.Parameters.Add("@BranchNumber", SqlDbType.Int).Value = branchNumber
+            updateCmd.Parameters.Add("@SellNumber", SqlDbType.Int).Value = sellNumber
+            updateCmd.Parameters.Add("@PN", SqlDbType.Int).Value = pn
+            If updateCmd.ExecuteNonQuery() > 0 Then Return
+        End Using
+
         Using cmd As New SqlCommand(
             "INSERT INTO Stock (BranchNumber, BillType, BillNumber, PN, NumberNS, NumberS, Number, BuyPrice, PercentVat, CanUseTime) " &
             "VALUES (@BranchNumber, 5, @SellNumber, @PN, @NumberNS, 0, @Number, 0, 0, @CanUseTime)", conn, tr)
@@ -3598,7 +3735,7 @@ Public Class fsell
 
         Try
             Using conn As SqlConnection = OpenConnection()
-                Using cmd As New SqlCommand("SELECT ID,RTRIM(Name) AS Name,RTRIM(Comment) AS Comment FROM PMT WHERE Status IS NULL AND SDate <= GETDATE() AND EDate >= GETDATE() ORDER BY ID", conn)
+                Using cmd As New SqlCommand("SELECT ID,RTRIM(Name) AS Name,RTRIM(Comment) AS Comment,Type FROM PMT WHERE Status IS NULL AND SDate <= GETDATE() AND EDate >= GETDATE() ORDER BY ID", conn)
                     Dim promotionTable As New DataTable()
                     Using adapter As New SqlDataAdapter(cmd)
                         adapter.Fill(promotionTable)
@@ -3607,8 +3744,17 @@ Public Class fsell
                     'อ่านข้อมูลจาก DataTable ก่อน เพื่อไม่ให้มี DataReader ค้างอยู่
                     'ระหว่างเรียก GetCategoryTotal ซึ่งมีการ Query ฐานข้อมูลซ้ำ
                     For Each promotionRow As DataRow In promotionTable.Rows
+                        Dim promotionID As Integer = Convert.ToInt32(promotionRow("ID"))
+                        Dim promotionType As Integer = If(IsDBNull(promotionRow("Type")), 0, Convert.ToInt32(promotionRow("Type")))
                         Dim name As String = promotionRow("Name").ToString().Trim()
                         Dim comment As String = If(promotionRow("Comment") Is DBNull.Value, "", promotionRow("Comment").ToString().Trim())
+
+                        'โปรโมชั่น Type 5 เป็นโปรโมชั่นของสินค้าที่ระบุใน PMTD.Part=1
+                        'ต้องมีสินค้านั้นอยู่ในบิลก่อน จึงจะแสดงให้เลือก
+                        If promotionType = 5 AndAlso Not IsDirectProductPromotionEligible(promotionID) Then
+                            Continue For
+                        End If
+
                         Dim minimum As Decimal = 0D
                         Dim match As Match = Regex.Match(comment, "ยอดขั้นต่ำต่อบิล\s*:\s*([0-9,\.]+)", RegexOptions.IgnoreCase)
                         If match.Success Then Decimal.TryParse(match.Groups(1).Value.Replace(",", ""), minimum)
@@ -3620,11 +3766,9 @@ Public Class fsell
                         Dim eligibleAmount As Decimal = If(String.IsNullOrWhiteSpace(categoryName) OrElse categoryName = "ทั้งหมด",
                                                                billTotal, GetCategoryTotal(categoryName))
                         If eligibleAmount >= minimum Then
-                            Dim isRaffle As Boolean = name.Contains("จับสลาก") OrElse name.Contains("ลุ้นรางวัล") OrElse name.Contains("ชิงโชค") OrElse comment.Contains("รูปแบบโปรโมชั่น: จับสลาก")
-                            Dim detail As String = If(minimum > 0D, "ซื้อครบ " & minimum.ToString("N2") & " บาท", "เข้าเงื่อนไข")
-                            If categoryName <> "" AndAlso categoryName <> "ทั้งหมด" Then detail &= " ในประเภท " & categoryName
-                            If isRaffle Then detail &= " → รับสิทธิ์นำใบเสร็จไปจับสลาก"
-                            result.Add(name & "  (" & detail & ")")
+                            'แสดงเฉพาะชื่อโปรโมชั่นในหน้าต่างเลือก
+                            'ไม่แสดงรายละเอียดเงื่อนไขในวงเล็บ เพราะทำให้ข้อความยาวเกินไป
+                            result.Add(name)
                         End If
                     Next
                 End Using
@@ -3634,6 +3778,53 @@ Public Class fsell
         End Try
 
         Return result
+    End Function
+
+    Private Function IsDirectProductPromotionEligible(promotionID As Integer) As Boolean
+        If dtSell Is Nothing OrElse dtSell.Rows.Count = 0 Then Return False
+
+        Try
+            Using conn As SqlConnection = OpenConnection()
+                Const sql As String =
+                    "SELECT D.PN,D.Number,ISNULL(RTRIM(P.ProductCode),'') AS ProductCode," &
+                    "ISNULL(RTRIM(P.Name),'') AS ProductName " &
+                    "FROM PMTD D LEFT JOIN Product P ON P.PN=D.PN " &
+                    "WHERE D.ID=@ID AND D.Part=1 AND D.PN>0"
+
+                Using cmd As New SqlCommand(sql, conn)
+                    cmd.Parameters.Add("@ID", SqlDbType.Int).Value = promotionID
+                    Using reader As SqlDataReader = cmd.ExecuteReader()
+                        While reader.Read()
+                            Dim targetPN As Long = Convert.ToInt64(reader("PN"))
+                            Dim requiredQty As Decimal = If(reader.IsDBNull(reader.GetOrdinal("Number")), 1D, Convert.ToDecimal(reader("Number")))
+                            If requiredQty <= 0D Then requiredQty = 1D
+                            Dim targetCode As String = Convert.ToString(reader("ProductCode")).Trim()
+                            Dim targetName As String = Convert.ToString(reader("ProductName")).Trim()
+
+                            For Each saleRow As DataRow In dtSell.Rows
+                                If saleRow.RowState = DataRowState.Deleted Then Continue For
+
+                                Dim sameProduct As Boolean = ReadLong(saleRow, "PN") = targetPN
+                                If Not sameProduct AndAlso targetCode <> "" Then
+                                    sameProduct = String.Equals(Convert.ToString(saleRow("ProductCode")).Trim(), targetCode, StringComparison.OrdinalIgnoreCase)
+                                End If
+                                If Not sameProduct AndAlso targetName <> "" Then
+                                    sameProduct = PromotionProductNamesMatch(Convert.ToString(saleRow("ProductName")), targetName)
+                                End If
+
+                                If sameProduct AndAlso ReadDecimal(saleRow, "Qty") >= requiredQty Then
+                                    Return True
+                                End If
+                            Next
+                        End While
+                    End Using
+                End Using
+            End Using
+        Catch
+            Return False
+        End Try
+
+        Return False
     End Function
 
     Private Function GetCategoryTotal(categoryName As String) As Decimal
@@ -3646,19 +3837,283 @@ Public Class fsell
                 If row.Table.Columns.Contains("PN") AndAlso Not IsDBNull(row("PN")) Then pn = Convert.ToInt64(row("PN"))
                 If pn <= 0 Then Continue For
 
-                Using cmd As New SqlCommand("SELECT TOP 1 RTRIM(C.Name) FROM Product P LEFT JOIN ProductGroup PG ON PG.ID=P.GroupID LEFT JOIN Category C ON C.ID=PG.CategoryID WHERE P.PN=@PN", conn)
+                Using cmd As New SqlCommand(
+                    "SELECT TOP 1 RTRIM(ISNULL(C.Name,'')) AS CategoryName," &
+                    "RTRIM(ISNULL(PG.Name,'')) AS GroupName " &
+                    "FROM Product P " &
+                    "LEFT JOIN ProductGroup PG ON PG.ID=P.GroupID " &
+                    "LEFT JOIN Category C ON C.ID=PG.CategoryID " &
+                    "WHERE P.PN=@PN", conn)
                     cmd.Parameters.Add("@PN", SqlDbType.BigInt).Value = pn
-                    Dim value As Object = cmd.ExecuteScalar()
-                    If value IsNot Nothing AndAlso value IsNot DBNull.Value AndAlso String.Equals(value.ToString().Trim(), categoryName.Trim(), StringComparison.OrdinalIgnoreCase) Then
-                        Dim amount As Decimal = 0D
-                        If row.Table.Columns.Contains("Amount") AndAlso Not IsDBNull(row("Amount")) Then amount = Convert.ToDecimal(row("Amount"))
-                        total += amount
-                    End If
+                    Using reader As SqlDataReader = cmd.ExecuteReader()
+                        If reader.Read() AndAlso PromotionCategoryMatches(
+                            Convert.ToString(reader("CategoryName")),
+                            Convert.ToString(reader("GroupName")),
+                            categoryName) Then
+                            Dim amount As Decimal = 0D
+                            If row.Table.Columns.Contains("Amount") AndAlso Not IsDBNull(row("Amount")) Then amount = Convert.ToDecimal(row("Amount"))
+                            total += amount
+                        End If
+                    End Using
                 End Using
             Next
         End Using
         Return total
     End Function
+
+    Private Function PromotionCategoryMatches(productCategory As String,
+                                               productGroup As String,
+                                               promotionCategory As String) As Boolean
+        Dim requested As String = If(promotionCategory, "").Trim()
+        If requested = "" Then Return False
+
+        Dim categoryValue As String = If(productCategory, "").Trim()
+        Dim groupValue As String = If(productGroup, "").Trim()
+        If String.Equals(categoryValue, requested, StringComparison.OrdinalIgnoreCase) OrElse
+           String.Equals(groupValue, requested, StringComparison.OrdinalIgnoreCase) Then
+            Return True
+        End If
+
+        'รองรับฐานข้อมูลที่ใช้ชื่อ "แช่แข็ง" ในกลุ่มสินค้า
+        'แต่หน้าตั้งโปรโมชั่นแสดงเป็น "สินค้าแช่แข็ง"
+        Dim normalizedRequested As String = requested.Replace(" ", "")
+        Dim normalizedCategory As String = categoryValue.Replace(" ", "")
+        Dim normalizedGroup As String = groupValue.Replace(" ", "")
+        If normalizedRequested.StartsWith("สินค้า", StringComparison.OrdinalIgnoreCase) Then
+            normalizedRequested = normalizedRequested.Substring("สินค้า".Length)
+        End If
+        If normalizedCategory.StartsWith("สินค้า", StringComparison.OrdinalIgnoreCase) Then
+            normalizedCategory = normalizedCategory.Substring("สินค้า".Length)
+        End If
+        If normalizedGroup.StartsWith("สินค้า", StringComparison.OrdinalIgnoreCase) Then
+            normalizedGroup = normalizedGroup.Substring("สินค้า".Length)
+        End If
+
+        If normalizedRequested <> "" AndAlso
+           (String.Equals(normalizedCategory, normalizedRequested, StringComparison.OrdinalIgnoreCase) OrElse
+            String.Equals(normalizedGroup, normalizedRequested, StringComparison.OrdinalIgnoreCase)) Then
+            Return True
+        End If
+
+        If normalizedRequested.Contains("แช่แข็ง") AndAlso
+           (normalizedCategory.Contains("แช่แข็ง") OrElse normalizedGroup.Contains("แช่แข็ง")) Then
+            Return True
+        End If
+
+        Return False
+    End Function
+
+    Private Function IsBeveragePromotionChoice(promotionChoice As String) As Boolean
+        Dim displayName As String = If(promotionChoice, "").Trim()
+        If displayName = "" Then Return False
+
+        'โปรโมชั่นที่ระบุประเภทสินค้าไว้ชัดเจน
+        If displayName.IndexOf("ประเภท เครื่องดื่ม", StringComparison.OrdinalIgnoreCase) >= 0 OrElse
+           displayName.IndexOf("ประเภทสินค้า: เครื่องดื่ม", StringComparison.OrdinalIgnoreCase) >= 0 Then
+            Return True
+        End If
+
+        'โปรโมชั่นลดราคาเมนูโดยตรงอาจไม่ได้ระบุประเภทใน Comment
+        'จึงตรวจสินค้าเป้าหมายใน PMTD ว่าอยู่ในหมวดเครื่องดื่มหรือไม่
+        Dim marker As Integer = displayName.IndexOf("  (", StringComparison.Ordinal)
+        If marker >= 0 Then displayName = displayName.Substring(0, marker).Trim()
+        If displayName = "" Then Return False
+
+        Try
+            Using conn As SqlConnection = OpenConnection()
+                Const sql As String =
+                    "SELECT COUNT(1) FROM PMT H " &
+                    "INNER JOIN PMTD D ON D.ID=H.ID AND D.Part=1 " &
+                    "INNER JOIN Product P ON P.PN=D.PN " &
+                    "LEFT JOIN ProductGroup PG ON PG.ID=P.GroupID " &
+                    "LEFT JOIN Category C ON C.ID=PG.CategoryID " &
+                    "WHERE H.Status IS NULL AND RTRIM(H.Name)=@Name AND " &
+                    "(ISNULL(PG.CategoryID,-1)=5 OR ISNULL(C.Name,N'') LIKE N'%เครื่องดื่ม%' " &
+                    "OR ISNULL(PG.Name,N'') LIKE N'%เครื่องดื่ม%' OR ISNULL(P.SUnit,N'') LIKE N'%แก้ว%')"
+                Using cmd As New SqlCommand(sql, conn)
+                    cmd.Parameters.Add("@Name", SqlDbType.NVarChar, 255).Value = displayName
+                    Return Convert.ToInt32(cmd.ExecuteScalar(), CultureInfo.InvariantCulture) > 0
+                End Using
+            End Using
+        Catch
+            Return False
+        End Try
+    End Function
+
+    Private Function HasBeverageProductInCurrentBill() As Boolean
+        If dtSell Is Nothing OrElse dtSell.Rows.Count = 0 Then Return False
+
+        Try
+            Using conn As SqlConnection = OpenConnection()
+                Const sql As String =
+                    "SELECT COUNT(1) FROM Product P " &
+                    "LEFT JOIN ProductGroup PG ON PG.ID=P.GroupID " &
+                    "LEFT JOIN Category C ON C.ID=PG.CategoryID " &
+                    "WHERE P.PN=@PN AND (" &
+                    "ISNULL(PG.CategoryID,-1)=5 OR " &
+                    "ISNULL(C.Name,N'') LIKE N'%เครื่องดื่ม%' OR " &
+                    "ISNULL(PG.Name,N'') LIKE N'%เครื่องดื่ม%' OR " &
+                    "ISNULL(P.SUnit,N'') LIKE N'%แก้ว%')"
+
+                For Each row As DataRow In dtSell.Rows
+                    If Not row.Table.Columns.Contains("PN") OrElse IsDBNull(row("PN")) Then Continue For
+
+                    Using cmd As New SqlCommand(sql, conn)
+                        cmd.Parameters.Add("@PN", SqlDbType.BigInt).Value = Convert.ToInt64(row("PN"))
+                        If Convert.ToInt32(cmd.ExecuteScalar(), CultureInfo.InvariantCulture) > 0 Then
+                            Return True
+                        End If
+                    End Using
+                Next
+            End Using
+        Catch
+            'ถ้าตรวจหมวดสินค้าไม่ได้ ให้กลับไปใช้หน้าต่างเลือกโปรโมชั่นเพื่อความปลอดภัย
+        End Try
+
+        Return False
+    End Function
+
+    Private Function HasCrabStickDoublePromotionEligibility() As Boolean
+        'เงื่อนไขพิเศษ: ถ้ามีปูอัดแผ่นทอดอยู่ในบิล
+        'และโปรโมชั่นที่เข้าเงื่อนไขแสดงอยู่ ให้ใช้ได้พร้อมกันสูงสุด 2 รายการ
+        If dtSell Is Nothing OrElse dtSell.Rows.Count = 0 Then Return False
+
+        For Each row As DataRow In dtSell.Rows
+            If row.RowState = DataRowState.Deleted Then Continue For
+
+            Dim productCode As String = ""
+            If row.Table.Columns.Contains("ProductCode") AndAlso Not row.IsNull("ProductCode") Then
+                productCode = Convert.ToString(row("ProductCode")).Trim()
+            End If
+
+            If Not String.Equals(productCode, "SMH1208", StringComparison.OrdinalIgnoreCase) Then Continue For
+            If ReadDecimal(row, "Qty") > 0D Then Return True
+        Next
+
+        Return False
+    End Function
+
+    Private Function GetPromotionGiftStockWarning(promotions As List(Of String)) As String
+        If promotions Is Nothing OrElse promotions.Count = 0 Then Return ""
+
+        Try
+            Using conn As SqlConnection = OpenConnection()
+                Const sql As String =
+                    "SELECT TOP 1 RTRIM(P.Name) AS GiftName,ISNULL(S.TotalStock,0) AS TotalStock,D.Number AS GiftQty " &
+                    "FROM PMT H " &
+                    "INNER JOIN PMTD D ON D.ID=H.ID AND D.Part=2 " &
+                    "INNER JOIN Product P ON P.PN=D.PN " &
+                    "OUTER APPLY (SELECT SUM(Number) AS TotalStock FROM Stock WHERE BranchNumber=1 AND PN=P.PN AND Number>0) S " &
+                    "WHERE H.Status IS NULL AND H.SDate <= GETDATE() AND H.EDate >= GETDATE() " &
+                    "AND H.Type=10 AND H.Name=@Name"
+
+                For Each promotionItem As String In promotions
+                    Dim promotionName As String = promotionItem.Trim()
+                    Dim detailStart As Integer = promotionName.IndexOf("  (", StringComparison.Ordinal)
+                    If detailStart >= 0 Then promotionName = promotionName.Substring(0, detailStart).Trim()
+                    If promotionName = "" Then Continue For
+
+                    Using cmd As New SqlCommand(sql, conn)
+                        cmd.Parameters.Add("@Name", SqlDbType.NVarChar, 300).Value = promotionName
+                        Using reader As SqlDataReader = cmd.ExecuteReader()
+                            If reader.Read() Then
+                                Dim giftName As String = Convert.ToString(reader("GiftName")).Trim()
+                                Dim totalStock As Decimal = If(reader.IsDBNull(reader.GetOrdinal("TotalStock")), 0D, Convert.ToDecimal(reader("TotalStock")))
+                                Dim giftQty As Decimal = If(reader.IsDBNull(reader.GetOrdinal("GiftQty")), 1D, Convert.ToDecimal(reader("GiftQty")))
+                                If totalStock < giftQty Then
+                                    Return "ของแถม: " & giftName &
+                                           " | ต้องใช้ " & giftQty.ToString("N0") &
+                                           " | สต็อกคงเหลือ " & totalStock.ToString("N0")
+                                End If
+                            End If
+                        End Using
+                    End Using
+                Next
+            End Using
+        Catch
+            'ถ้าตรวจสต็อกไม่ได้ ให้ขั้นตอน ApplyPromotionToBill ตรวจซ้ำอีกครั้ง
+        End Try
+
+        Return ""
+    End Function
+
+    Private Function HasSufficientPromotionGiftStock(promotionName As String) As Boolean
+        If String.IsNullOrWhiteSpace(promotionName) Then Return True
+
+        Dim cleanName As String = promotionName.Trim()
+        Dim detailStart As Integer = cleanName.IndexOf("  (", StringComparison.Ordinal)
+        If detailStart >= 0 Then cleanName = cleanName.Substring(0, detailStart).Trim()
+
+        Try
+            Using conn As SqlConnection = OpenConnection()
+                Const sql As String =
+                    "SELECT TOP 1 ISNULL(S.TotalStock,0) AS TotalStock,D.Number AS GiftQty " &
+                    "FROM PMT H " &
+                    "INNER JOIN PMTD D ON D.ID=H.ID AND D.Part=2 " &
+                    "OUTER APPLY (SELECT SUM(Number) AS TotalStock FROM Stock WHERE BranchNumber=1 AND PN=D.PN AND Number>0) S " &
+                    "WHERE H.Status IS NULL AND H.SDate <= GETDATE() AND H.EDate >= GETDATE() " &
+                    "AND H.Type=10 AND H.Name=@Name"
+
+                Using cmd As New SqlCommand(sql, conn)
+                    cmd.Parameters.Add("@Name", SqlDbType.NVarChar, 300).Value = cleanName
+                    Using reader As SqlDataReader = cmd.ExecuteReader()
+                        'ไม่ใช่โปรโมชั่นของแถม หรือไม่พบข้อมูลโปรโมชั่น ให้ทำงานตามเดิม
+                        If Not reader.Read() Then Return True
+
+                        Dim totalStock As Decimal = If(reader.IsDBNull(reader.GetOrdinal("TotalStock")), 0D, Convert.ToDecimal(reader("TotalStock")))
+                        Dim giftQty As Decimal = If(reader.IsDBNull(reader.GetOrdinal("GiftQty")), 1D, Convert.ToDecimal(reader("GiftQty")))
+                        Return totalStock >= giftQty
+                    End Using
+                End Using
+            End Using
+        Catch
+            'ถ้าตรวจไม่ได้ ให้ ApplyPromotionToBill เป็นผู้ตรวจซ้ำและแจ้งเตือนเอง
+            Return True
+        End Try
+    End Function
+
+    Private Sub ShowLargePromotionStockWarning(message As String)
+        Using warningForm As New Form()
+            warningForm.Text = "แจ้งเตือนสต็อกของแถม"
+            warningForm.StartPosition = FormStartPosition.CenterParent
+            warningForm.FormBorderStyle = FormBorderStyle.FixedDialog
+            warningForm.MaximizeBox = False
+            warningForm.MinimizeBox = False
+            warningForm.ShowInTaskbar = False
+            warningForm.ClientSize = New Size(760, 330)
+            warningForm.Font = New Font("Tahoma", 12.0!, FontStyle.Regular)
+
+            Dim iconBox As New PictureBox()
+            iconBox.Image = SystemIcons.Warning.ToBitmap()
+            iconBox.SizeMode = PictureBoxSizeMode.AutoSize
+            iconBox.Location = New Point(28, 42)
+            warningForm.Controls.Add(iconBox)
+
+            Dim messageLabel As New Label()
+            messageLabel.Text = message
+            messageLabel.AutoSize = False
+            messageLabel.Location = New Point(100, 28)
+            messageLabel.Size = New Size(625, 190)
+            messageLabel.Font = New Font("Tahoma", 16.0!, FontStyle.Bold)
+            messageLabel.ForeColor = Color.FromArgb(45, 45, 45)
+            messageLabel.TextAlign = ContentAlignment.MiddleLeft
+            warningForm.Controls.Add(messageLabel)
+
+            Dim okButton As New Button()
+            okButton.Text = "ตกลง"
+            okButton.DialogResult = DialogResult.OK
+            okButton.Size = New Size(150, 52)
+            okButton.Location = New Point(300, 245)
+            okButton.Font = New Font("Tahoma", 14.0!, FontStyle.Bold)
+            okButton.BackColor = Color.FromArgb(0, 120, 215)
+            okButton.ForeColor = Color.White
+            okButton.FlatStyle = FlatStyle.Flat
+            warningForm.Controls.Add(okButton)
+
+            warningForm.AcceptButton = okButton
+            warningForm.ShowDialog(Me)
+        End Using
+    End Sub
 
     Private Function TrySelectPromotionForPayment(ByRef usePromotion As Boolean, ByRef promotionName As String) As Boolean
         usePromotion = False
@@ -3671,30 +4126,106 @@ Public Class fsell
             Return True
         End If
 
-        'ใช้โปรโมชั่นที่เข้าเงื่อนไขรายการแรกอัตโนมัติ ไม่ต้องเปิดหน้าต่างให้เลือก
         Dim availablePromotions As List(Of String) = GetMonthlyPromotionChoices()
+
+        'ไม่แสดงโปรโมชั่นเครื่องดื่ม ถ้าในบิลไม่มีสินค้าเครื่องดื่ม
+        'ป้องกันโปรโมชั่นที่ไม่มีขั้นต่ำ เช่น อเมริกาโน่ แสดงปะปนกับโปรสินค้าแช่แข็ง
+        If Not HasBeverageProductInCurrentBill() Then
+            Dim nonBeveragePromotions As New List(Of String)()
+            For Each candidate As String In availablePromotions
+                If Not IsBeveragePromotionChoice(candidate) Then
+                    nonBeveragePromotions.Add(candidate)
+                End If
+            Next
+            availablePromotions = nonBeveragePromotions
+        End If
+
         If availablePromotions.Count = 0 Then
             selectedPromotionName = ""
             Return True
         End If
+
+        Dim giftStockWarning As String = GetPromotionGiftStockWarning(availablePromotions)
+        If Not String.IsNullOrWhiteSpace(giftStockWarning) Then
+            ShowLargePromotionStockWarning(
+                "พบโปรโมชั่นของแถมที่เข้าเงื่อนไข แต่สต็อกไม่เพียงพอ" &
+                Environment.NewLine & giftStockWarning &
+                Environment.NewLine & "กรุณาเติมสต็อกก่อนรับเงิน")
+
+            'หลังจากแจ้งเตือนแล้ว ห้ามให้เลือกโปรโมชั่นของแถมที่สต็อกไม่พอ
+            Dim availableGiftStockPromotions As New List(Of String)()
+            For Each candidate As String In availablePromotions
+                If HasSufficientPromotionGiftStock(candidate) Then
+                    availableGiftStockPromotions.Add(candidate)
+                End If
+            Next
+            availablePromotions = availableGiftStockPromotions
+
+            If availablePromotions.Count = 0 Then
+                selectedPromotionName = ""
+                Return True
+            End If
+        End If
+
+        'โปรโมชั่นเครื่องดื่มให้ระบบคำนวณทุกโปรโมชั่นที่เข้าเงื่อนไขรวมกัน
+        'ส่วนโปรโมชั่นสินค้าอื่นที่เข้าได้หลายรายการยังให้ผู้ใช้เลือกได้ 1 รายการ
+        Dim automaticBeveragePromotions As New List(Of String)()
+        For Each candidate As String In availablePromotions
+            If IsBeveragePromotionChoice(candidate) Then
+                automaticBeveragePromotions.Add(candidate)
+            End If
+        Next
+
+        Dim candidatesToApply As New List(Of String)()
+        Dim allowTwoPromotions As Boolean = HasCrabStickDoublePromotionEligibility()
+
+        'กรณียอดปูอัดแผ่นทอดครบ 599 บาท ให้เลือกใช้โปรโมชั่นได้สูงสุด 2 รายการ
+        'เช่น โปรปูอัดแผ่นทอด 2 แพ็ค และโปรซื้อสินค้าแช่แข็งครบ 599 บาทรับของแถม
+        If allowTwoPromotions AndAlso availablePromotions.Count > 1 Then
+            candidatesToApply.AddRange(ShowPromotionChoicesDialog(availablePromotions, 2))
+        'คำนวณโปรโมชั่นเครื่องดื่มอัตโนมัติเฉพาะบิลที่มีเครื่องดื่มจริงเท่านั้น
+        'ป้องกันโปรเครื่องดื่มที่เปิดใช้งานอยู่ไปบังโปรสินค้าแช่แข็ง/สินค้าอื่น
+        ElseIf automaticBeveragePromotions.Count > 0 AndAlso HasBeverageProductInCurrentBill() Then
+            candidatesToApply.AddRange(automaticBeveragePromotions)
+        Else
+            'โปรโมชั่นที่ไม่ใช่เครื่องดื่มให้เปิดหน้าต่างเลือกเสมอ
+            'แม้จะมีเพียง 1 รายการ เพื่อให้ผู้ใช้ยืนยันว่าจะใช้โปรโมชั่นหรือไม่
+            Dim selectedCandidate As String = ShowPromotionChoiceDialog(availablePromotions)
+            If Not String.IsNullOrWhiteSpace(selectedCandidate) Then candidatesToApply.Add(selectedCandidate)
+        End If
+
+        If candidatesToApply.Count = 0 Then
+            selectedPromotionName = ""
+            Return True
+        End If
+
         Dim promotionFailureReason As String = ""
         Dim appliedDiscount As Decimal = 0D
         Dim selectedNames As New List(Of String)()
-        For Each candidate As String In availablePromotions
+        For Each candidate As String In candidatesToApply
             Dim candidateReason As String = ""
-            Dim candidateDiscount As Decimal = ApplyPromotionToBill(candidate, candidateReason, False)
-            If candidateDiscount > 0D Then
-                'ใช้โปรโมชั่นที่ตรงกับสินค้าเป็นตัวแรกเพียงรายการเดียว
-                'ไม่สะสมโปรโมชั่นหลายรายการกับบิลเดียว เพราะจะทำให้ส่วนลดของสินค้า
-                'รายการเดียวถูกหักซ้ำ เช่น 6 บาทกลายเป็น 18 บาท
-                appliedDiscount = candidateDiscount
+            Dim candidateApplied As Boolean = False
+            Dim candidateDiscount As Decimal = ApplyPromotionToBill(candidate, candidateReason, False, candidateApplied)
+            If candidateApplied Then
+                appliedDiscount += candidateDiscount
                 selectedNames.Add(candidate)
-                Exit For
+            ElseIf String.IsNullOrWhiteSpace(promotionFailureReason) Then
+                promotionFailureReason = candidateReason
             End If
-            If String.IsNullOrWhiteSpace(promotionFailureReason) Then promotionFailureReason = candidateReason
         Next
 
-        If selectedNames.Count = 0 OrElse appliedDiscount <= 0D Then
+        If selectedNames.Count = 0 Then
+            If Not String.IsNullOrWhiteSpace(promotionFailureReason) AndAlso
+               promotionFailureReason.Contains("สต็อก") Then
+                MessageBox.Show(
+                    "บิลนี้เข้าเงื่อนไขโปรโมชั่นแล้ว แต่ไม่สามารถเพิ่มของแถมได้" &
+                    Environment.NewLine & promotionFailureReason &
+                    Environment.NewLine & "กรุณาตรวจสอบสต็อกสินค้าของแถมก่อนรับเงิน",
+                    "ไม่สามารถใช้ของแถมโปรโมชั่น",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning)
+            End If
+
             'สำรองกรณีโปรโมชั่นลดตรงตามสินค้า (Type 1/2/5) ถูกคัดออกจากรายการ
             'เพราะข้อความเงื่อนไขประเภทสินค้าหรือยอดขั้นต่ำใน Comment ไม่ตรงรูปแบบเดิม
             'แต่ PMTD ยังผูก PN สินค้าในบิลไว้ชัดเจน เช่น Type 5 ราคา 139 จากราคาปกติ 145
@@ -3769,17 +4300,25 @@ Public Class fsell
             For Each saleRow As DataRow In dtSell.Rows
                 If saleRow.RowState = DataRowState.Deleted Then Continue For
                 If ReadLong(saleRow, "PN") <> promotionPN Then Continue For
+                If IsFreeCupSelectedProduct(promotionPN) Then Continue For
 
                 Dim qty As Decimal = Convert.ToDecimal(saleRow("Qty"))
-                If qty < allowedQty Then Continue For
                 Dim unitPrice As Decimal = Convert.ToDecimal(saleRow("Price"))
-                Dim promoQty As Decimal = Math.Min(qty, allowedQty)
+                Dim setCount As Decimal = Decimal.Floor(qty / allowedQty)
+                If setCount <= 0D Then Continue For
+                Dim promoQty As Decimal = setCount * allowedQty
                 Dim lineDiscount As Decimal
 
                 If discountPercent > 0D Then
                     lineDiscount = Math.Max(0D, unitPrice * discountPercent / 100D * promoQty)
                 ElseIf fixedPrice > 0D Then
-                    lineDiscount = Math.Max(0D, (unitPrice - fixedPrice) * promoQty)
+                    If promotionType = 5 Then
+                        'Type 5 เก็บราคาหลังลดเป็นราคารวมต่อชุด
+                        'เช่น 2 แพ็ค ราคาปกติ 158 เหลือ 149
+                        lineDiscount = Math.Max(0D, unitPrice * promoQty - fixedPrice * setCount)
+                    Else
+                        lineDiscount = Math.Max(0D, (unitPrice - fixedPrice) * promoQty)
+                    End If
                 Else
                     lineDiscount = Math.Max(0D, Math.Min(unitPrice, discountMoney) * promoQty)
                 End If
@@ -3799,8 +4338,10 @@ Public Class fsell
 
     Private Function ApplyPromotionToBill(selectedPromotion As String,
                                           ByRef failureReason As String,
-                                          Optional showMessage As Boolean = True) As Decimal
+                                          Optional showMessage As Boolean = True,
+                                          Optional ByRef promotionApplied As Boolean = False) As Decimal
         failureReason = ""
+        promotionApplied = False
         If dtSell Is Nothing OrElse dtSell.Rows.Count = 0 Then
             failureReason = "ยังไม่มีสินค้าในรายการขาย"
             Return 0D
@@ -3828,73 +4369,128 @@ Public Class fsell
         'โปรโมชั่นลดราคาสินค้าโดยตรง เช่น PN 116 ลด 10 บาท เหลือ 30 บาท
         'รูปแบบนี้เก็บสินค้าไว้ใน PMTD.Part=1 และไม่มีรายการรางวัล Part=2
         Dim directDiscount As Decimal = ApplyDirectProductPromotion(promotionName, showMessage)
-        If directDiscount > 0D Then Return directDiscount
+        If directDiscount > 0D Then
+            promotionApplied = True
+            Return directDiscount
+        End If
 
         Dim discountTotal As Decimal = 0D
         Using conn As SqlConnection = OpenConnection()
-            Using cmd As New SqlCommand("SELECT D.PN,D.Price,D.Number,ISNULL(P.ProductCode,'') AS RewardProductCode,ISNULL(P.Name,'') AS RewardProductName,ISNULL(H.Comment,'') AS PromotionComment FROM PMTD D INNER JOIN PMT H ON H.ID=D.ID LEFT JOIN Product P ON P.PN=D.PN WHERE H.Name=@Name AND H.Status IS NULL AND D.Part=2 ORDER BY D.Item", conn)
+            Using cmd As New SqlCommand("SELECT H.Type,D.PN,D.Price,D.Number,ISNULL(P.ProductCode,'') AS RewardProductCode,ISNULL(P.Name,'') AS RewardProductName FROM PMTD D INNER JOIN PMT H ON H.ID=D.ID LEFT JOIN Product P ON P.PN=D.PN WHERE H.Name=@Name AND H.Status IS NULL AND D.Part=2 ORDER BY D.Item", conn)
                 cmd.Parameters.Add("@Name", SqlDbType.NVarChar, 300).Value = promotionName
-                Using reader As SqlDataReader = cmd.ExecuteReader()
-                    Dim hasPromotionItems As Boolean = reader.HasRows
-                    If Not hasPromotionItems Then
-                        reader.Close()
-                        Using raffleCmd As New SqlCommand("SELECT TOP 1 ISNULL(Comment,'') FROM PMT WHERE Name=@Name AND Status IS NULL", conn)
-                            raffleCmd.Parameters.Add("@Name", SqlDbType.NVarChar, 300).Value = promotionName
-                            Dim promotionComment As String = Convert.ToString(raffleCmd.ExecuteScalar())
-                            If promotionComment.Contains("รูปแบบโปรโมชั่น: จับสลาก") OrElse promotionName.Contains("จับสลาก") OrElse promotionName.Contains("ลุ้นรางวัล") OrElse promotionName.Contains("ชิงโชค") Then
-                                ShowLargePromotionMessage("ได้รับสิทธิ์จับสลากแล้ว\nกรุณานำใบเสร็จไปจับฉลากลุ้นรางวัล")
-                                Return 1D
-                            End If
-                        End Using
-                    End If
-                    'ถ้าไม่มีรายการ PMTD Reader ถูกปิดไปแล้ว ต้องไม่เรียก Read ซ้ำ
-                    If hasPromotionItems Then
-                        While reader.Read()
-                            Dim pn As Long = Convert.ToInt64(reader("PN"))
-                            Dim specialPrice As Decimal = Convert.ToDecimal(reader("Price"))
-                            Dim allowedQty As Decimal = Convert.ToDecimal(reader("Number"))
-                            Dim rewardProductCode As String = Convert.ToString(reader("RewardProductCode")).Trim()
-                            Dim rewardProductName As String = Convert.ToString(reader("RewardProductName")).Trim()
-                            If allowedQty <= 0D Then allowedQty = 1D
-
-                            For Each row As DataRow In dtSell.Rows
-                                If row.RowState = DataRowState.Deleted Then Continue For
-
-                                Dim rowPN As Long = ReadLong(row, "PN")
-                                Dim rowProductCode As String = Convert.ToString(row("ProductCode")).Trim()
-                                Dim rowProductName As String = Convert.ToString(row("ProductName")).Trim()
-                                Dim sameProduct As Boolean = (rowPN = pn)
-
-                                'รองรับสินค้าที่ PN ในโปรโมชั่นเก่าคลาดเคลื่อน แต่รหัสสินค้าเดียวกัน
-                                If Not sameProduct AndAlso rewardProductCode <> "" Then
-                                    sameProduct = String.Equals(rowProductCode, rewardProductCode, StringComparison.OrdinalIgnoreCase)
-                                End If
-
-                                'ชื่อในตะกร้าอาจมีรายละเอียดเมนูต่อท้าย เช่น (เย็น, 100% หวาน)
-                                If Not sameProduct AndAlso rewardProductName <> "" Then
-                                    sameProduct = PromotionProductNamesMatch(rowProductName, rewardProductName)
-                                End If
-
-                                If Not sameProduct Then Continue For
-                                Dim qty As Decimal = Convert.ToDecimal(row("Qty"))
-                                Dim unitPrice As Decimal = Convert.ToDecimal(row("Price"))
-                                Dim promoQty As Decimal = Math.Min(qty, allowedQty)
-                                Dim lineDiscount As Decimal = Math.Max(0D, (unitPrice - specialPrice) * promoQty)
-                                If lineDiscount <= 0D Then Continue For
-
-                                discountTotal += lineDiscount
-                                Exit For
-                            Next
-                        End While
-                    End If
+                Dim promotionItems As New DataTable()
+                Using adapter As New SqlDataAdapter(cmd)
+                    adapter.Fill(promotionItems)
                 End Using
+
+                If promotionItems.Rows.Count = 0 Then
+                    Using raffleCmd As New SqlCommand("SELECT TOP 1 ISNULL(Comment,'') FROM PMT WHERE Name=@Name AND Status IS NULL", conn)
+                        raffleCmd.Parameters.Add("@Name", SqlDbType.NVarChar, 300).Value = promotionName
+                        Dim promotionComment As String = Convert.ToString(raffleCmd.ExecuteScalar())
+                        If promotionComment.Contains("รูปแบบโปรโมชั่น: จับสลาก") OrElse promotionName.Contains("จับสลาก") OrElse promotionName.Contains("ลุ้นรางวัล") OrElse promotionName.Contains("ชิงโชค") Then
+                            ShowLargePromotionMessage("ได้รับสิทธิ์จับสลากแล้ว\nกรุณานำใบเสร็จไปจับฉลากลุ้นรางวัล")
+                            Return 1D
+                        End If
+                    End Using
+                Else
+                    For Each promotionRow As DataRow In promotionItems.Rows
+                        Dim promotionType As Integer = Convert.ToInt32(promotionRow("Type"))
+                        Dim pn As Long = Convert.ToInt64(promotionRow("PN"))
+                        Dim specialPrice As Decimal = Convert.ToDecimal(promotionRow("Price"))
+                        Dim allowedQty As Decimal = Convert.ToDecimal(promotionRow("Number"))
+                        Dim rewardProductCode As String = Convert.ToString(promotionRow("RewardProductCode")).Trim()
+                        Dim rewardProductName As String = Convert.ToString(promotionRow("RewardProductName")).Trim()
+                        If allowedQty <= 0D Then allowedQty = 1D
+
+                        Dim rewardInBill As Boolean = False
+                        For Each row As DataRow In dtSell.Rows
+                            If row.RowState = DataRowState.Deleted Then Continue For
+
+                            Dim rowPN As Long = ReadLong(row, "PN")
+                            Dim rowProductCode As String = Convert.ToString(row("ProductCode")).Trim()
+                            Dim rowProductName As String = Convert.ToString(row("ProductName")).Trim()
+                            Dim sameProduct As Boolean = (rowPN = pn)
+
+                            'รองรับสินค้าที่ PN ในโปรโมชั่นเก่าคลาดเคลื่อน แต่รหัสสินค้าเดียวกัน
+                            If Not sameProduct AndAlso rewardProductCode <> "" Then
+                                sameProduct = String.Equals(rowProductCode, rewardProductCode, StringComparison.OrdinalIgnoreCase)
+                            End If
+
+                            'ชื่อในตะกร้าอาจมีรายละเอียดเมนูต่อท้าย เช่น (เย็น, 100% หวาน)
+                            If Not sameProduct AndAlso rewardProductName <> "" Then
+                                sameProduct = PromotionProductNamesMatch(rowProductName, rewardProductName)
+                            End If
+
+                            If Not sameProduct Then Continue For
+                            rewardInBill = True
+                            If IsFreeCupSelectedProduct(rowPN) Then Continue For
+                            Dim qty As Decimal = Convert.ToDecimal(row("Qty"))
+                            Dim unitPrice As Decimal = Convert.ToDecimal(row("Price"))
+                            Dim promoQty As Decimal = Math.Min(qty, allowedQty)
+                            Dim lineDiscount As Decimal = Math.Max(0D, (unitPrice - specialPrice) * promoQty)
+                            If lineDiscount > 0D Then
+                                discountTotal += lineDiscount
+                                promotionApplied = True
+                            ElseIf promotionType = 10 Then
+                                'ของแถมราคา 0 บาทอาจไม่มีส่วนลดทางการเงินเพิ่ม
+                                'แต่ยังถือว่าใช้สิทธิ์โปรโมชั่นแล้ว
+                                promotionApplied = True
+                            End If
+                            Exit For
+                        Next
+
+                        'Type 10: ถ้ายังไม่มีสินค้าของแถมในบิล ให้เพิ่ม 1 ชิ้นอัตโนมัติ
+                        'เพื่อให้ InsertSellD และ ProcessSellStock ตัดสต็อกของแถมในบิลเดียวกัน
+                        If promotionType = 10 AndAlso Not rewardInBill AndAlso pn > 0 AndAlso specialPrice >= 0D Then
+                            Dim rewardQty As Decimal = Math.Max(1D, allowedQty)
+                            Dim rewardProductCodeValue As String = rewardProductCode
+                            Dim rewardProductNameValue As String = rewardProductName
+                            Dim rewardBarcode As String = ""
+                            Dim rewardUnit As String = ""
+                            Dim rewardSellPrice As Decimal = 0D
+                            Dim rewardStock As Decimal = 0D
+
+                            Using rewardCommand As New SqlCommand(
+                                "SELECT TOP 1 RTRIM(P.ProductCode) AS ProductCode,RTRIM(ISNULL(P.Barcode,'')) AS Barcode," &
+                                "RTRIM(P.Name) AS ProductName,RTRIM(ISNULL(P.SUnit,'')) AS UnitUse,ISNULL(P.Price1,0) AS SellPrice," &
+                                "ISNULL(S.TotalStock,0) AS TotalStock " &
+                                "FROM Product P OUTER APPLY (SELECT SUM(Number) AS TotalStock FROM Stock WHERE BranchNumber=1 AND PN=P.PN AND Number>0) S " &
+                                "WHERE P.PN=@PN AND P.Status IS NULL", conn)
+                                rewardCommand.Parameters.Add("@PN", SqlDbType.BigInt).Value = pn
+                                Using rewardReader As SqlDataReader = rewardCommand.ExecuteReader()
+                                    If rewardReader.Read() Then
+                                        rewardProductCodeValue = Convert.ToString(rewardReader("ProductCode")).Trim()
+                                        rewardBarcode = Convert.ToString(rewardReader("Barcode")).Trim()
+                                        rewardProductNameValue = Convert.ToString(rewardReader("ProductName")).Trim()
+                                        rewardUnit = Convert.ToString(rewardReader("UnitUse")).Trim()
+                                        rewardSellPrice = Convert.ToDecimal(rewardReader("SellPrice"))
+                                        rewardStock = Convert.ToDecimal(rewardReader("TotalStock"))
+                                    End If
+                                End Using
+                            End Using
+
+                            If rewardProductNameValue = "" OrElse rewardStock < rewardQty Then
+                                failureReason = "สินค้าแถมมีสต็อกไม่เพียงพอ"
+                                Continue For
+                            End If
+
+                            AddOrIncreaseRow(pn, rewardProductCodeValue, rewardBarcode, rewardProductNameValue,
+                                             rewardQty, rewardUnit, rewardSellPrice, 0D, 0D,
+                                             rewardSellPrice, rewardStock, "สินค้าของแถมโปรโมชั่น")
+                            discountTotal += Math.Max(0D, (rewardSellPrice - specialPrice) * rewardQty)
+                            promotionApplied = True
+                        End If
+                    Next
+                End If
             End Using
         End Using
 
-        If discountTotal > 0D Then
-            Dim currentCashDiscount As Decimal = 0D
-            Decimal.TryParse(tbDCCash.Text.Replace(",", ""), currentCashDiscount)
-            tbDCCash.Text = (currentCashDiscount + discountTotal).ToString("N2")
+        If promotionApplied Then
+            If discountTotal > 0D Then
+                Dim currentCashDiscount As Decimal = 0D
+                Decimal.TryParse(tbDCCash.Text.Replace(",", ""), currentCashDiscount)
+                tbDCCash.Text = (currentCashDiscount + discountTotal).ToString("N2")
+            End If
         Else
             failureReason = "ตรวจพบยอดซื้อครบเงื่อนไขแล้ว แต่ไม่พบสินค้าแลกซื้อที่ตรงกับรายการในบิล หรือราคาพิเศษไม่ต่ำกว่าราคาขาย"
         End If
@@ -3963,6 +4559,7 @@ Public Class fsell
             Dim qty As Decimal = 0D
             If saleRow.Table.Columns.Contains("Qty") AndAlso Not IsDBNull(saleRow("Qty")) Then qty = Convert.ToDecimal(saleRow("Qty"))
             If qty <= 0D Then Continue For
+            If IsFreeCupSelectedProduct(pn) Then Continue For
             If mainPNs.Contains(pn) Then
                 mainRows(saleRow) = qty
             ElseIf optionPNs.Contains(pn) Then
@@ -4074,17 +4671,24 @@ Public Class fsell
                     sameProduct = PromotionProductNamesMatch(Convert.ToString(row("ProductName")), promotionProductName)
                 End If
                 If Not sameProduct Then Continue For
+                If IsFreeCupSelectedProduct(ReadLong(row, "PN")) Then Continue For
 
                 Dim qty As Decimal = Convert.ToDecimal(row("Qty"))
                 Dim unitPrice As Decimal = Convert.ToDecimal(row("Price"))
-                If qty < allowedQty Then Continue For
-                Dim promoQty As Decimal = Math.Min(qty, allowedQty)
+                Dim setCount As Decimal = Decimal.Floor(qty / allowedQty)
+                If setCount <= 0D Then Continue For
+                Dim promoQty As Decimal = setCount * allowedQty
                 Dim lineDiscount As Decimal
 
                 If discountPercent > 0D Then
                     lineDiscount = Math.Max(0D, unitPrice * (discountPercent / 100D) * promoQty)
                 ElseIf fixedPrice > 0D Then
-                    lineDiscount = Math.Max(0D, (unitPrice - fixedPrice) * promoQty)
+                    If promotionType = 5 Then
+                        'Type 5 ใช้ราคาหลังลดเป็นราคารวมต่อชุด
+                        lineDiscount = Math.Max(0D, unitPrice * promoQty - fixedPrice * setCount)
+                    Else
+                        lineDiscount = Math.Max(0D, (unitPrice - fixedPrice) * promoQty)
+                    End If
                 Else
                     lineDiscount = Math.Max(0D, Math.Min(unitPrice, discountMoney) * promoQty)
                 End If
@@ -4159,8 +4763,7 @@ Public Class fsell
         End Using
     End Sub
 
-    Private Function ShowPromotionChoiceDialog() As String
-        Dim promotions As List(Of String) = GetMonthlyPromotionChoices()
+    Private Function ShowPromotionChoiceDialog(promotions As List(Of String)) As String
         If promotions.Count = 0 Then Return ""
 
         Using frm As New Form()
@@ -4187,14 +4790,17 @@ Public Class fsell
             panel.WrapContents = False
             panel.AutoScroll = True
             frm.Controls.Add(panel)
+            Dim firstPromotion As Boolean = True
             For Each promoName As String In promotions
-                Dim chk As New CheckBox()
-                chk.Text = promoName
-                chk.Tag = promoName
-                chk.AutoSize = False
-                chk.Size = New Size(490, 36)
-                chk.Margin = New Padding(4, 4, 4, 4)
-                panel.Controls.Add(chk)
+                Dim opt As New RadioButton()
+                opt.Text = promoName
+                opt.Tag = promoName
+                opt.AutoSize = False
+                opt.Size = New Size(490, 36)
+                opt.Margin = New Padding(4, 4, 4, 4)
+                opt.Checked = firstPromotion
+                firstPromotion = False
+                panel.Controls.Add(opt)
             Next
 
             Dim btnOK As New Button()
@@ -4218,39 +4824,140 @@ Public Class fsell
             frm.CancelButton = btnCancel
 
             If frm.ShowDialog(Me) <> DialogResult.OK Then Return ""
-            Dim selectedPromotions As New List(Of String)()
             For Each ctrl As Control In panel.Controls
-                Dim chk = TryCast(ctrl, CheckBox)
-                If chk IsNot Nothing AndAlso chk.Checked Then
-                    selectedPromotions.Add(Convert.ToString(chk.Tag))
+                Dim opt = TryCast(ctrl, RadioButton)
+                If opt IsNot Nothing AndAlso opt.Checked Then
+                    Return Convert.ToString(opt.Tag)
                 End If
             Next
-
-            If selectedPromotions.Count > 0 Then
-                Return String.Join(" / ", selectedPromotions)
-            End If
         End Using
 
         Return ""
     End Function
 
+    Private Function ShowPromotionChoicesDialog(promotions As List(Of String), maxSelections As Integer) As List(Of String)
+        Dim selected As New List(Of String)()
+        If promotions Is Nothing OrElse promotions.Count = 0 Then Return selected
+        If maxSelections <= 0 Then maxSelections = 1
+
+        Using frm As New Form()
+            frm.Text = "เลือกโปรโมชั่น"
+            frm.StartPosition = FormStartPosition.CenterParent
+            frm.FormBorderStyle = FormBorderStyle.FixedDialog
+            frm.MaximizeBox = False
+            frm.MinimizeBox = False
+            frm.ClientSize = New Size(620, 430)
+            frm.Font = New Font("Segoe UI", 11.0!, FontStyle.Regular)
+
+            Dim lblTitle As New Label()
+            lblTitle.Text = "บิลนี้ใช้สิทธิ์ได้สูงสุด " & maxSelections.ToString() & " โปรโมชั่น"
+            lblTitle.Font = New Font("Segoe UI Semibold", 13.0!, FontStyle.Bold)
+            lblTitle.AutoSize = False
+            lblTitle.Location = New Point(18, 16)
+            lblTitle.Size = New Size(580, 34)
+            frm.Controls.Add(lblTitle)
+
+            Dim lblHint As New Label()
+            lblHint.Text = "เลือกโปรโมชั่นที่ต้องการใช้ แล้วกดตกลง"
+            lblHint.AutoSize = False
+            lblHint.Location = New Point(18, 48)
+            lblHint.Size = New Size(580, 26)
+            frm.Controls.Add(lblHint)
+
+            Dim panel As New FlowLayoutPanel()
+            panel.Location = New Point(18, 80)
+            panel.Size = New Size(584, 270)
+            panel.FlowDirection = FlowDirection.TopDown
+            panel.WrapContents = False
+            panel.AutoScroll = True
+            frm.Controls.Add(panel)
+
+            Dim index As Integer = 0
+            For Each promoName As String In promotions
+                Dim opt As New CheckBox()
+                opt.Text = promoName
+                opt.Tag = promoName
+                opt.AutoSize = False
+                opt.Size = New Size(550, 44)
+                opt.Margin = New Padding(4, 4, 4, 4)
+                opt.Checked = index < maxSelections
+                AddHandler opt.CheckedChanged,
+                    Sub(sender As Object, e As EventArgs)
+                        Dim changed = TryCast(sender, CheckBox)
+                        If changed Is Nothing OrElse Not changed.Checked Then Return
+
+                        Dim selectedCount As Integer = panel.Controls.OfType(Of CheckBox)().Count(Function(x) x.Checked)
+                        If selectedCount > maxSelections Then
+                            changed.Checked = False
+                            MessageBox.Show("เลือกโปรโมชั่นได้ไม่เกิน " & maxSelections.ToString() & " รายการ", "โปรโมชั่น", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                        End If
+                    End Sub
+                panel.Controls.Add(opt)
+                index += 1
+            Next
+
+            Dim btnOK As New Button()
+            btnOK.Text = "ตกลง"
+            btnOK.DialogResult = DialogResult.OK
+            btnOK.Size = New Size(120, 42)
+            btnOK.Location = New Point(350, 370)
+            btnOK.BackColor = Color.FromArgb(38, 166, 154)
+            btnOK.ForeColor = Color.White
+            btnOK.FlatStyle = FlatStyle.Flat
+            frm.Controls.Add(btnOK)
+
+            Dim btnCancel As New Button()
+            btnCancel.Text = "ยกเลิก"
+            btnCancel.DialogResult = DialogResult.Cancel
+            btnCancel.Size = New Size(120, 42)
+            btnCancel.Location = New Point(482, 370)
+            frm.Controls.Add(btnCancel)
+
+            frm.AcceptButton = btnOK
+            frm.CancelButton = btnCancel
+
+            If frm.ShowDialog(Me) <> DialogResult.OK Then Return selected
+
+            For Each ctrl As Control In panel.Controls
+                Dim opt = TryCast(ctrl, CheckBox)
+                If opt IsNot Nothing AndAlso opt.Checked Then
+                    selected.Add(Convert.ToString(opt.Tag))
+                End If
+            Next
+        End Using
+
+        Return selected
+    End Function
+
     Private Sub AppendPromotionToComment(promotionName As String)
         If String.IsNullOrWhiteSpace(promotionName) Then Exit Sub
 
-        'ชื่อที่แสดงในหน้าต่างเลือกโปรโมชั่นอาจมีรายละเอียดเงื่อนไขต่อท้ายในวงเล็บ
-        'ไม่ต้องพิมพ์รายละเอียดส่วนนี้ซ้ำบนใบเสร็จ ให้แสดงเฉพาะชื่อโปรโมชั่นหลัก
-        Dim displayName As String = promotionName.Trim()
-        Dim detailStart As Integer = displayName.IndexOf("  (", StringComparison.Ordinal)
-        If detailStart >= 0 Then displayName = displayName.Substring(0, detailStart).Trim()
-        If String.IsNullOrWhiteSpace(displayName) Then Exit Sub
+        'โปรโมชั่นหลายรายการถูกส่งมาในรูปแบบชื่อ1 / ชื่อ2
+        'ให้แสดงคนละบรรทัดบนใบเสร็จ เพื่อให้ลูกค้าเห็นสิทธิ์ครบทุกโปร
+        Dim promotionNames As String() = promotionName.Split(New String() {" / "}, StringSplitOptions.RemoveEmptyEntries)
+        For Each promotionItem As String In promotionNames
+            'ชื่อที่แสดงในหน้าต่างเลือกโปรโมชั่นอาจมีรายละเอียดเงื่อนไขต่อท้ายในวงเล็บ
+            'ไม่ต้องพิมพ์รายละเอียดส่วนนี้ซ้ำบนใบเสร็จ ให้แสดงเฉพาะชื่อโปรโมชั่นหลัก
+            Dim displayName As String = promotionItem.Trim()
+            Dim detailStart As Integer = displayName.IndexOf("  (", StringComparison.Ordinal)
+            If detailStart >= 0 Then displayName = displayName.Substring(0, detailStart).Trim()
+            If String.IsNullOrWhiteSpace(displayName) Then Continue For
 
-        If tbComment.Text.Trim().Contains(displayName) Then Exit Sub
+            'แสดงข้อความท้ายบิลให้ลูกค้าเข้าใจสิทธิ์ของโปรโมชั่นแช่แข็ง
+            'ซื้อครบ 599 บาทขึ้นไป ได้ตุ๊กตา 1 ตัวต่อบิล
+            If displayName.IndexOf("แช่แข็ง", StringComparison.OrdinalIgnoreCase) >= 0 AndAlso
+               Regex.IsMatch(displayName, "599(?:\.00)?", RegexOptions.IgnoreCase) Then
+                displayName = "ซื้อแช่แข็งครบ 599 รับตุ๊กตาสมายจัง 1 ตัว"
+            End If
 
-        If String.IsNullOrWhiteSpace(tbComment.Text) Then
-            tbComment.Text = displayName
-        Else
-            tbComment.Text = tbComment.Text.Trim() & " / " & displayName
-        End If
+            If tbComment.Text.Trim().Contains(displayName) Then Continue For
+
+            If String.IsNullOrWhiteSpace(tbComment.Text) Then
+                tbComment.Text = displayName
+            Else
+                tbComment.Text = tbComment.Text.Trim() & Environment.NewLine & displayName
+            End If
+        Next
     End Sub
 
     Private Function BuildPromotionDetail(promotionName As String) As String
@@ -4338,6 +5045,7 @@ Public Class fsell
             Dim isEligible As Boolean = IsFreeCupRedeemableProduct(pn)
             For i As Integer = 1 To rowQty
                 result.Add(New FreeCupSelectionItem With {
+                    .ProductNumber = pn,
                     .MenuName = Convert.ToString(sellRow("ProductName")),
                     .Price = price,
                     .IsEligible = isEligible
@@ -4378,6 +5086,15 @@ Public Class fsell
         Catch
             Return False
         End Try
+    End Function
+
+    Private Function IsFreeCupSelectedProduct(pn As Long) As Boolean
+        If Not useFreeCupInCurrentBill OrElse pn <= 0 Then Return False
+        If freeCupSelectedItems Is Nothing OrElse freeCupSelectedItems.Count = 0 Then Return False
+
+        Return freeCupSelectedItems.Any(Function(item) item IsNot Nothing AndAlso
+                                                   item.IsEligible AndAlso
+                                                   item.ProductNumber = pn)
     End Function
 
     Private Function GetMaxUsableFreeCupQty(cupQty As Decimal,
@@ -4599,6 +5316,55 @@ Public Class fsell
     End Sub
 
     Private qrForm As fQRPayment
+    Private qrPromotionSnapshotActive As Boolean = False
+    Private qrOriginalCashDiscount As Decimal = 0D
+    Private qrOriginalPromotionName As String = ""
+
+    Private Function ReadCashDiscountValue() As Decimal
+        Dim discount As Decimal = 0D
+        Dim textValue As String = If(tbDCCash Is Nothing, "", tbDCCash.Text).Replace(",", "").Trim()
+        If Not Decimal.TryParse(textValue, NumberStyles.Any, CultureInfo.InvariantCulture, discount) Then
+            Decimal.TryParse(textValue, discount)
+        End If
+        Return Math.Max(0D, discount)
+    End Function
+
+    Private Sub RestorePaymentPromotionState(originalDiscount As Decimal, originalPromotionName As String)
+        selectedPromotionName = If(originalPromotionName, "")
+        If tbDCCash IsNot Nothing Then
+            tbDCCash.Text = Math.Max(0D, originalDiscount).ToString("N2")
+        End If
+        RemoveAutoPromotionGiftRows()
+    End Sub
+
+    Private Sub RemoveAutoPromotionGiftRows()
+        If dtSell Is Nothing Then Return
+
+        Dim rowsToRemove As New List(Of DataRow)()
+        For Each row As DataRow In dtSell.Rows
+            If row.RowState = DataRowState.Deleted Then Continue For
+            If row.Table.Columns.Contains("Comment") AndAlso
+               Convert.ToString(row("Comment")).IndexOf("สินค้าของแถมโปรโมชั่น", StringComparison.OrdinalIgnoreCase) >= 0 Then
+                rowsToRemove.Add(row)
+            End If
+        Next
+
+        If rowsToRemove.Count = 0 Then Return
+        For Each row As DataRow In rowsToRemove
+            dtSell.Rows.Remove(row)
+        Next
+
+        RenumberSellRows()
+        If KryptonDataGridView2 IsNot Nothing Then
+            KryptonDataGridView2.DataSource = Nothing
+            KryptonDataGridView2.DataSource = dtSell
+            KryptonDataGridView2.Refresh()
+        End If
+        CalculateSummary()
+        UpdateBillItemCount()
+        UpdateCustomerDisplay()
+    End Sub
+
     Private Sub qrForm_FormClosed(sender As Object, e As FormClosedEventArgs)
         Dim ff As fQRPayment = DirectCast(sender, fQRPayment)
 
@@ -4609,7 +5375,12 @@ Public Class fsell
             dPayCash = 0D
 
             HandlePaymentAndPrint("โอน [002203005517]", ff.UsePromotion, ff.PromotionName)
+        ElseIf qrPromotionSnapshotActive Then
+            'ปิด/ยกเลิกหน้าชำระเงิน: คืนส่วนลดก่อนเปิดหน้าชำระเงิน
+            RestorePaymentPromotionState(qrOriginalCashDiscount, qrOriginalPromotionName)
         End If
+
+        qrPromotionSnapshotActive = False
 
         If customerDisplay IsNot Nothing AndAlso Not customerDisplay.IsDisposed Then
             ' customerDisplay.ShowSalePanel()
@@ -4633,7 +5404,7 @@ Public Class fsell
         rp.SaleDate = DateTime.Now
         rp.CashierName = OfficerName
         rp.PayBy = payByText
-        rp.Remark = tbComment.Text.Trim()
+        rp.Remark = frmReceiptPreview.CleanReceiptRemark(tbComment.Text.Trim())
 
         rp.CustomerCode = customerCode
         rp.CustomerName = lbCustomerName.Text
@@ -4666,6 +5437,11 @@ Public Class fsell
             Decimal.TryParse(Convert.ToString(sellRow("Qty")), item.Qty)
             Decimal.TryParse(Convert.ToString(sellRow("Price")), item.Price)
             Decimal.TryParse(Convert.ToString(sellRow("Amount")), item.Amount)
+
+            'ใบเสร็จต้องแสดงราคาสินค้า แม้รายการนั้นใช้สิทธิ์แก้วฟรี
+            If useFreeCupInCurrentBill AndAlso IsFreeCupSelectedProduct(ReadLong(sellRow, "PN")) Then
+                item.Amount = item.Qty * item.Price
+            End If
 
             rp.Items.Add(item)
         Next
@@ -4834,7 +5610,7 @@ Public Class fsell
         For Each item In rp.Items
             Dim qtyText As String = item.Qty.ToString("N0")
             Dim priceText As String = item.Price.ToString("N2")
-            Dim amountText As String = (item.Qty * item.Price).ToString("N2")
+            Dim amountText As String = item.Amount.ToString("N2")
             Dim displayName As String = If(item.ProductName, "").Trim()
             Dim unitText As String = If(String.IsNullOrWhiteSpace(item.Sunit), "แพ็ค", item.Sunit.Trim())
             Dim optionStart As Integer = displayName.IndexOf(" (", StringComparison.Ordinal)
@@ -4873,12 +5649,6 @@ Public Class fsell
             totalUnit += item.Qty
             i += 1
         Next
-
-        If freeCupDiscountApplied > 0D Then
-            e.Graphics.DrawString("ส่วนลดแก้วฟรี", fBody, Brushes.Black, leftX, y)
-            e.Graphics.DrawString("-" & freeCupDiscountApplied.ToString("N2"), fBody, Brushes.Black, rightX, y, sfRight)
-            y += lh
-        End If
 
         e.Graphics.DrawLine(Pens.Black, leftX, y, rightX, y)
         y += 8
@@ -5014,6 +5784,9 @@ Public Class fsell
             useFreeCupInCurrentBill = False
             freeCupDiscountApplied = 0D
             freeCupUseQty = 0
+            freeCupSelectedItems.Clear()
+            freeCupOriginalRowDiscounts.Clear()
+            freeCupOriginalRowDiscountPercents.Clear()
 
             ' เคลียร์ grid และ bind ตารางขายใหม่ เพื่อให้คีย์รายการต่อแล้วโชว์ทันที
             ShowdatainGrid()
@@ -5226,6 +5999,10 @@ Public Class fsell
     Private Sub btCash_Click_1(sender As Object, e As EventArgs) Handles btCash.Click
         payType = 1
 
+        'โปรโมชั่นจะถูกคำนวณเพื่อแสดงยอดในหน้ารับเงินก่อน
+        'ถ้าผู้ใช้ปิดหรือยกเลิกหน้าต่าง ต้องคืนส่วนลดเดิมเพื่อไม่ให้กดครั้งถัดไปลดซ้ำ
+        Dim originalCashDiscount As Decimal = ReadCashDiscountValue()
+        Dim originalPromotionName As String = selectedPromotionName
         Dim usePromotion As Boolean = False
         Dim promotionName As String = ""
         If Not TrySelectPromotionForPayment(usePromotion, promotionName) Then Exit Sub
@@ -5241,18 +6018,30 @@ Public Class fsell
         End If
         Dim total As Decimal = Math.Max(0D, billTotal - discountAfterPromotion)
 
+        Dim receiveResult As DialogResult = DialogResult.Cancel
+        Dim receiveMoney As Decimal = 0D
+        Dim changeMoney As Decimal = 0D
         Using f As New fReceiveMoney()
             f.TotalDue = total
             f.CustomerDisplayForm = customerDisplay   ' ⭐ ต้องมีบรรทัดนี้
-            If f.ShowDialog() = DialogResult.OK Then
-                dCashReceiveMoney = f.ReceiveMoney
-                dCashChangeMoney = f.ChangeMoney
-                dCashPayMoney = dCashReceiveMoney - dCashChangeMoney
-                dPayCash = dCashPayMoney
-
-                HandlePaymentAndPrint("เงินสด", usePromotion, promotionName)
+            receiveResult = f.ShowDialog()
+            If receiveResult = DialogResult.OK Then
+                receiveMoney = f.ReceiveMoney
+                changeMoney = f.ChangeMoney
             End If
         End Using
+
+        If receiveResult <> DialogResult.OK Then
+            RestorePaymentPromotionState(originalCashDiscount, originalPromotionName)
+            Exit Sub
+        End If
+
+        dCashReceiveMoney = receiveMoney
+        dCashChangeMoney = changeMoney
+        dCashPayMoney = dCashReceiveMoney - dCashChangeMoney
+        dPayCash = dCashPayMoney
+
+        HandlePaymentAndPrint("เงินสด", usePromotion, promotionName)
     End Sub
 
     Private Sub btnTransfer_Click_1(sender As Object, e As EventArgs) Handles btnTransfer.Click
@@ -5265,6 +6054,8 @@ Public Class fsell
             End If
 
             payType = 4 ' โอนเงิน
+            qrOriginalCashDiscount = ReadCashDiscountValue()
+            qrOriginalPromotionName = selectedPromotionName
             Dim usePromotion As Boolean = False
             Dim promotionName As String = ""
             Dim tempRef As String = GenerateTempRefNo()
@@ -5290,6 +6081,7 @@ Public Class fsell
             qrForm.UsePromotion = usePromotion             ' ถ้าคุณอยากเก็บไว้ใช้ต่อ
             qrForm.PromotionName = promotionName
             qrForm.Owner = Me
+            qrPromotionSnapshotActive = True
 
             AddHandler qrForm.FormClosed, AddressOf qrForm_FormClosed
 

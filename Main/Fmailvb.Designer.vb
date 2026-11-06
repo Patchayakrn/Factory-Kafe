@@ -47,6 +47,7 @@ Partial Class Fmailvb
         Me.ToolStripButton2 = New System.Windows.Forms.ToolStripDropDownButton()
         Me.btnInventory = New System.Windows.Forms.ToolStripMenuItem()
         Me.btnMaterialStock = New System.Windows.Forms.ToolStripMenuItem()
+        Me.btnStockCheck = New System.Windows.Forms.ToolStripMenuItem()
         Me.ToolStripSeparatorStockMenu = New System.Windows.Forms.ToolStripSeparator()
         Me.btnMaterialUsage = New System.Windows.Forms.ToolStripMenuItem()
         Me.btnMaterialIssue = New System.Windows.Forms.ToolStripMenuItem()
@@ -204,7 +205,7 @@ Partial Class Fmailvb
         Me.btnBuyProduct.Font = New System.Drawing.Font("Cordia New", 13.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.btnBuyProduct.Image = CType(resources.GetObject("btnBuyProduct.Image"), System.Drawing.Image)
         Me.btnBuyProduct.Name = "btnBuyProduct"
-        Me.btnBuyProduct.Size = New System.Drawing.Size(224, 36)
+        Me.btnBuyProduct.Size = New System.Drawing.Size(196, 36)
         Me.btnBuyProduct.Text = "ซื้อสินค้า (Buy)"
         '
         'ToolStripSeparator3
@@ -228,7 +229,7 @@ Partial Class Fmailvb
         Me.btnSell.Font = New System.Drawing.Font("Cordia New", 13.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.btnSell.Image = CType(resources.GetObject("btnSell.Image"), System.Drawing.Image)
         Me.btnSell.Name = "btnSell"
-        Me.btnSell.Size = New System.Drawing.Size(224, 36)
+        Me.btnSell.Size = New System.Drawing.Size(202, 36)
         Me.btnSell.Text = "ขายสินค้า (Sell)"
         '
         'ToolStripSeparator5
@@ -239,7 +240,7 @@ Partial Class Fmailvb
         'ToolStripButton2
         '
         Me.ToolStripButton2.BackColor = System.Drawing.Color.LightSkyBlue
-        Me.ToolStripButton2.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.btnInventory, Me.btnMaterialStock, Me.ToolStripSeparatorStockMenu, Me.btnMaterialUsage, Me.btnMaterialIssue, Me.btnMaterialReceive})
+        Me.ToolStripButton2.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.btnInventory, Me.btnMaterialStock, Me.btnStockCheck, Me.ToolStripSeparatorStockMenu, Me.btnMaterialUsage, Me.btnMaterialIssue, Me.btnMaterialReceive})
         Me.ToolStripButton2.Font = New System.Drawing.Font("Cordia New", 13.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.ToolStripButton2.Image = CType(resources.GetObject("ToolStripButton2.Image"), System.Drawing.Image)
         Me.ToolStripButton2.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft
@@ -263,6 +264,14 @@ Partial Class Fmailvb
         Me.btnMaterialStock.Name = "btnMaterialStock"
         Me.btnMaterialStock.Size = New System.Drawing.Size(392, 36)
         Me.btnMaterialStock.Text = "สต็อกวัตถุดิบ (Material Stock)"
+        '
+        'btnStockCheck
+        '
+        Me.btnStockCheck.Font = New System.Drawing.Font("Cordia New", 13.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnStockCheck.Image = CType(resources.GetObject("btnStockCheck.Image"), System.Drawing.Image)
+        Me.btnStockCheck.Name = "btnStockCheck"
+        Me.btnStockCheck.Size = New System.Drawing.Size(392, 36)
+        Me.btnStockCheck.Text = "บันทึกผลตรวจสต็อกวัตถุดิบ (Stock Check)"
         '
         'ToolStripSeparatorStockMenu
         '
@@ -288,9 +297,10 @@ Partial Class Fmailvb
         'btnMaterialReceive
         '
         Me.btnMaterialReceive.Font = New System.Drawing.Font("Cordia New", 13.8!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnMaterialReceive.Image = CType(resources.GetObject("btnMaterialReceive.Image"), System.Drawing.Image)
         Me.btnMaterialReceive.Name = "btnMaterialReceive"
         Me.btnMaterialReceive.Size = New System.Drawing.Size(392, 36)
-        Me.btnMaterialReceive.Text = "รับวัตถุดิบเข้าสต็อก"
+        Me.btnMaterialReceive.Text = "รับวัตถุดิบ"
         '
         'ToolStripSeparator4
         '
@@ -415,6 +425,7 @@ Partial Class Fmailvb
     Friend WithEvents ToolStripButton2 As ToolStripDropDownButton
     Friend WithEvents btnInventory As ToolStripMenuItem
     Friend WithEvents btnMaterialStock As ToolStripMenuItem
+    Friend WithEvents btnStockCheck As ToolStripMenuItem
     Friend WithEvents ToolStripSeparatorStockMenu As ToolStripSeparator
     Friend WithEvents btnMaterialUsage As ToolStripMenuItem
     Friend WithEvents btnMaterialIssue As ToolStripMenuItem

@@ -6,7 +6,7 @@ Imports System.Windows.Forms
 
 ''' <summary>
 ''' หน้าสร้าง/แก้ไข BOM สูตรเครื่องดื่ม
-''' ใช้ dbo.BOM และ dbo.MaterialDrink เป็นตารางเก็บสูตรมาตรฐานของสินค้าและวัตถุดิบ
+''' ใช้ BOMHeader/BOMDetail เก็บประวัติสูตร และใช้ dbo.BOM เป็นตารางเดิมเพื่อความเข้ากันได้กับส่วนเก่า
 ''' </summary>
 Public Class frmBeverageBom
     Inherits Form
@@ -14,6 +14,7 @@ Public Class frmBeverageBom
     Private selectedFinishedProductCode As String
     Private requestedProductCode As String
     Private isLoading As Boolean
+    Private isNewRecipe As Boolean
 
     Public Sub New(Optional productCodeValue As String = "")
         MyBase.New()
@@ -26,12 +27,14 @@ Public Class frmBeverageBom
         AddHandler btnRemoveMaterial.Click, AddressOf RemoveMaterialClick
         AddHandler btnSave.Click, AddressOf SaveRecipeClick
         AddHandler btnClose.Click, AddressOf CloseForm
+        AddHandler dtpRecipeDate.ValueChanged, AddressOf RecipeDateChanged
         AddHandler gridMaterials.CellValidating, AddressOf MaterialsCellValidating
         AddHandler gridMaterials.CellEndEdit, AddressOf MaterialsCellEndEdit
     End Sub
 
     Private Sub FormLoaded(sender As Object, e As EventArgs)
         FitToMdiWorkspace()
+        DbSchemaChecker.EnsureSupportTables()
         ApplyPermissionState()
         LoadFinishedProducts()
     End Sub
@@ -118,6 +121,11 @@ Public Class frmBeverageBom
         LoadSelectedRecipe()
     End Sub
 
+    Private Sub RecipeDateChanged(sender As Object, e As EventArgs)
+        If isLoading OrElse isNewRecipe Then Return
+        LoadSelectedRecipe()
+    End Sub
+
     Private Function SelectedFinishedRow() As DataRowView
         Return TryCast(cboFinishedProduct.SelectedItem, DataRowView)
     End Function
@@ -126,6 +134,7 @@ Public Class frmBeverageBom
         Dim selected As DataRowView = SelectedFinishedRow()
         gridMaterials.Rows.Clear()
         selectedFinishedProductCode = ""
+        isNewRecipe = False
         If selected Is Nothing Then Return
 
         selectedFinishedProductCode = Convert.ToString(selected("ProductCode")).Trim()
@@ -134,14 +143,24 @@ Public Class frmBeverageBom
         Try
             Using conn As SqlConnection = modVariable.OpenConnection()
                 Const sql As String =
-                    "SELECT B.MaterialID, B.[Use], RTRIM(ISNULL(M.Material_Detail,N'')) AS MaterialDetail, " &
+                    "SELECT H.VersionNo, H.EffectiveFrom, D.MaterialID, D.[Use], RTRIM(ISNULL(M.Material_Detail,N'')) AS MaterialDetail, " &
                     "RTRIM(ISNULL(M.Unit_Use,N'')) AS UnitUse, M.Unit_per_Package " &
-                    "FROM dbo.BOM B LEFT JOIN dbo.MaterialDrink M ON M.MaterialID=B.MaterialID " &
-                    "WHERE B.ProductID=@ProductID ORDER BY B.MaterialID"
+                    "FROM dbo.BOMHeader H INNER JOIN dbo.BOMDetail D ON D.BOMID=H.BOMID " &
+                    "LEFT JOIN dbo.MaterialDrink M ON M.MaterialID=D.MaterialID " &
+                    "WHERE H.ProductID=@ProductID AND H.EffectiveFrom<=@RecipeDate " &
+                    "AND (H.EffectiveTo IS NULL OR H.EffectiveTo>=@RecipeDate) " &
+                    "ORDER BY H.EffectiveFrom DESC, H.VersionNo DESC, D.MaterialID"
                 Using cmd As New SqlCommand(sql, conn)
                     cmd.Parameters.Add("@ProductID", SqlDbType.NVarChar, 30).Value = selectedFinishedProductCode
+                    cmd.Parameters.Add("@RecipeDate", SqlDbType.DateTime).Value = dtpRecipeDate.Value.Date
                     Using reader As SqlDataReader = cmd.ExecuteReader()
+                        Dim loadedVersion As Integer = 0
+                        Dim loadedDate As DateTime = dtpRecipeDate.Value.Date
                         While reader.Read()
+                            If loadedVersion = 0 Then
+                                loadedVersion = Convert.ToInt32(reader("VersionNo"))
+                                loadedDate = Convert.ToDateTime(reader("EffectiveFrom"))
+                            End If
                             AppendMaterialGridRow(
                                 Convert.ToString(reader("MaterialID")).Trim(),
                                 Convert.ToString(reader("MaterialDetail")).Trim(),
@@ -149,13 +168,16 @@ Public Class frmBeverageBom
                                 Convert.ToString(reader("UnitUse")).Trim(),
                                 reader("Unit_per_Package"))
                         End While
+                        If loadedVersion > 0 Then
+                            lblRecipeStatus.Text = If(PermissionService.HasPermission("ProductDrink.Add"),
+                                String.Format(CultureInfo.CurrentCulture, "สูตรเวอร์ชัน {0} เริ่มใช้ {1:dd/MM/yyyy} | กด สูตรใหม่ เพื่อเพิ่มสูตรโดยเก็บสูตรเดิมไว้", loadedVersion, loadedDate),
+                                String.Format(CultureInfo.CurrentCulture, "สูตรเวอร์ชัน {0} เริ่มใช้ {1:dd/MM/yyyy} (ดูอย่างเดียว)", loadedVersion, loadedDate))
+                        End If
                     End Using
                 End Using
             End Using
             If gridMaterials.Rows.Count = 0 Then
                 lblRecipeStatus.Text = If(PermissionService.HasPermission("ProductDrink.Add"), "ยังไม่มีสูตร BOM สำหรับสินค้านี้ กด เพิ่มวัตถุดิบ เพื่อสร้างสูตร", "ยังไม่มีสูตร BOM สำหรับสินค้านี้")
-            Else
-                lblRecipeStatus.Text = If(PermissionService.HasPermission("ProductDrink.Add"), "โหลดสูตร BOM เดิมแล้ว สามารถแก้ไขจำนวนและบันทึกทับได้", "โหลดสูตร BOM เดิมแล้ว (ดูอย่างเดียว)")
             End If
         Catch ex As Exception
             MessageBox.Show("โหลดสูตร BOM ไม่สำเร็จ: " & ex.Message, "สร้าง BOM", MessageBoxButtons.OK, MessageBoxIcon.Warning)
@@ -166,7 +188,9 @@ Public Class frmBeverageBom
         If Not CanEditRecipe() Then Return
         If cboFinishedProduct.Items.Count = 0 Then Return
         gridMaterials.Rows.Clear()
-        lblRecipeStatus.Text = "เริ่มสูตรใหม่สำหรับ " & txtFinishedProduct.Text
+        isNewRecipe = True
+        dtpRecipeDate.Value = Date.Today
+        lblRecipeStatus.Text = "เริ่มสูตรใหม่สำหรับ " & txtFinishedProduct.Text & " | สูตรเดิมยังคงเก็บไว้"
     End Sub
 
     Private Sub AddMaterialClick(sender As Object, e As EventArgs)
@@ -265,29 +289,95 @@ Public Class frmBeverageBom
         Next
 
         Try
+            Dim effectiveFrom As DateTime = dtpRecipeDate.Value.Date
+            Dim nextVersion As Integer = 0
             Using conn As SqlConnection = modVariable.OpenConnection()
                 Using tr As SqlTransaction = conn.BeginTransaction()
-                    Const deleteSql As String = "DELETE FROM dbo.BOM WHERE ProductID=@ProductID"
-                    Using deleteCommand As New SqlCommand(deleteSql, conn, tr)
-                        deleteCommand.Parameters.Add("@ProductID", SqlDbType.NVarChar, 30).Value = selectedFinishedProductCode
-                        deleteCommand.ExecuteNonQuery()
+                    Dim nextEffectiveFrom As Nullable(Of DateTime) = Nothing
+                    Using nextCommand As New SqlCommand(
+                        "SELECT MIN(EffectiveFrom) FROM dbo.BOMHeader WHERE ProductID=@ProductID AND EffectiveFrom>@EffectiveFrom", conn, tr)
+                        nextCommand.Parameters.Add("@ProductID", SqlDbType.NVarChar, 50).Value = selectedFinishedProductCode
+                        nextCommand.Parameters.Add("@EffectiveFrom", SqlDbType.DateTime).Value = effectiveFrom
+                        Dim nextValue As Object = nextCommand.ExecuteScalar()
+                        If nextValue IsNot Nothing AndAlso nextValue IsNot DBNull.Value Then nextEffectiveFrom = Convert.ToDateTime(nextValue)
                     End Using
 
-                    Const insertSql As String =
-                        "INSERT INTO dbo.BOM (ProductID, MaterialID, [Use]) VALUES (@ProductID, @MaterialID, @Use)"
+                    Using duplicateCommand As New SqlCommand(
+                        "SELECT COUNT(1) FROM dbo.BOMHeader WHERE ProductID=@ProductID AND EffectiveFrom=@EffectiveFrom", conn, tr)
+                        duplicateCommand.Parameters.Add("@ProductID", SqlDbType.NVarChar, 50).Value = selectedFinishedProductCode
+                        duplicateCommand.Parameters.Add("@EffectiveFrom", SqlDbType.DateTime).Value = effectiveFrom
+                        If Convert.ToInt32(duplicateCommand.ExecuteScalar()) > 0 Then
+                            tr.Rollback()
+                            MessageBox.Show("วันที่เริ่มใช้สูตรนี้มีอยู่แล้ว กรุณาเลือกวันที่ใหม่เพื่อสร้างเวอร์ชันใหม่", "สร้าง BOM", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                            Return
+                        End If
+                    End Using
+
+                    Using closePrevious As New SqlCommand(
+                        "UPDATE dbo.BOMHeader SET EffectiveTo=DATEADD(SECOND,-1,@EffectiveFrom) " &
+                        "WHERE ProductID=@ProductID AND EffectiveFrom<@EffectiveFrom " &
+                        "AND (EffectiveTo IS NULL OR EffectiveTo>=@EffectiveFrom)", conn, tr)
+                        closePrevious.Parameters.Add("@ProductID", SqlDbType.NVarChar, 50).Value = selectedFinishedProductCode
+                        closePrevious.Parameters.Add("@EffectiveFrom", SqlDbType.DateTime).Value = effectiveFrom
+                        closePrevious.ExecuteNonQuery()
+                    End Using
+
+                    Using versionCommand As New SqlCommand("SELECT ISNULL(MAX(VersionNo),0)+1 FROM dbo.BOMHeader WHERE ProductID=@ProductID", conn, tr)
+                        versionCommand.Parameters.Add("@ProductID", SqlDbType.NVarChar, 50).Value = selectedFinishedProductCode
+                        nextVersion = Convert.ToInt32(versionCommand.ExecuteScalar())
+                    End Using
+
+                    Dim bomID As Integer
+                    Const insertHeaderSql As String =
+                        "INSERT INTO dbo.BOMHeader(ProductID, VersionNo, EffectiveFrom, EffectiveTo, Remark) " &
+                        "OUTPUT INSERTED.BOMID VALUES (@ProductID, @VersionNo, @EffectiveFrom, @EffectiveTo, @Remark)"
+                    Using headerCommand As New SqlCommand(insertHeaderSql, conn, tr)
+                        headerCommand.Parameters.Add("@ProductID", SqlDbType.NVarChar, 50).Value = selectedFinishedProductCode
+                        headerCommand.Parameters.Add("@VersionNo", SqlDbType.Int).Value = nextVersion
+                        headerCommand.Parameters.Add("@EffectiveFrom", SqlDbType.DateTime).Value = effectiveFrom
+                        headerCommand.Parameters.Add("@EffectiveTo", SqlDbType.DateTime).Value = If(nextEffectiveFrom.HasValue, CType(nextEffectiveFrom.Value.AddSeconds(-1), Object), DBNull.Value)
+                        headerCommand.Parameters.Add("@Remark", SqlDbType.NVarChar, 500).Value = "เพิ่มสูตรใหม่จากหน้าสร้าง BOM"
+                        bomID = Convert.ToInt32(headerCommand.ExecuteScalar())
+                    End Using
+
+                    Const insertDetailSql As String =
+                        "INSERT INTO dbo.BOMDetail(BOMID, MaterialID, [Use]) VALUES (@BOMID, @MaterialID, @Use)"
                     For Each material As BomMaterial In materials
-                        Using insert As New SqlCommand(insertSql, conn, tr)
-                            insert.Parameters.Add("@ProductID", SqlDbType.NVarChar, 30).Value = selectedFinishedProductCode
+                        Using insert As New SqlCommand(insertDetailSql, conn, tr)
+                            insert.Parameters.Add("@BOMID", SqlDbType.Int).Value = bomID
                             insert.Parameters.Add("@MaterialID", SqlDbType.NVarChar, 30).Value = material.MaterialID
-                            insert.Parameters.Add("@Use", SqlDbType.Decimal).Value = material.Number
+                            Dim useParameter = insert.Parameters.Add("@Use", SqlDbType.Decimal)
+                            useParameter.Precision = 18
+                            useParameter.Scale = 4
+                            useParameter.Value = material.Number
                             insert.ExecuteNonQuery()
+                        End Using
+                    Next
+
+                    'อัปเดตตาราง BOM เดิมให้ส่วนเก่าของโปรแกรมเห็นสูตรปัจจุบันด้วย
+                    Using deleteLegacy As New SqlCommand("DELETE FROM dbo.BOM WHERE ProductID=@ProductID", conn, tr)
+                        deleteLegacy.Parameters.Add("@ProductID", SqlDbType.NVarChar, 50).Value = selectedFinishedProductCode
+                        deleteLegacy.ExecuteNonQuery()
+                    End Using
+                    Const insertLegacySql As String =
+                        "INSERT INTO dbo.BOM(ProductID, MaterialID, [Use]) VALUES (@ProductID, @MaterialID, @Use)"
+                    For Each material As BomMaterial In materials
+                        Using insertLegacy As New SqlCommand(insertLegacySql, conn, tr)
+                            insertLegacy.Parameters.Add("@ProductID", SqlDbType.NVarChar, 50).Value = selectedFinishedProductCode
+                            insertLegacy.Parameters.Add("@MaterialID", SqlDbType.NVarChar, 50).Value = material.MaterialID
+                            Dim useParameter = insertLegacy.Parameters.Add("@Use", SqlDbType.Decimal)
+                            useParameter.Precision = 18
+                            useParameter.Scale = 4
+                            useParameter.Value = material.Number
+                            insertLegacy.ExecuteNonQuery()
                         End Using
                     Next
                     tr.Commit()
                 End Using
             End Using
-            lblRecipeStatus.Text = "บันทึกสูตร BOM เรียบร้อยแล้ว"
-            MessageBox.Show("บันทึกสูตร BOM เรียบร้อยแล้ว", "สร้าง BOM", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            isNewRecipe = False
+            lblRecipeStatus.Text = String.Format(CultureInfo.CurrentCulture, "บันทึกสูตร BOM เวอร์ชัน {0} เรียบร้อยแล้ว เริ่มใช้ {1:dd/MM/yyyy}", nextVersion, effectiveFrom)
+            MessageBox.Show(String.Format(CultureInfo.CurrentCulture, "บันทึกสูตร BOM เวอร์ชัน {0} เรียบร้อยแล้ว\nสูตรเดิมยังคงอยู่ในประวัติ", nextVersion), "สร้าง BOM", MessageBoxButtons.OK, MessageBoxIcon.Information)
         Catch ex As Exception
             MessageBox.Show("บันทึกสูตร BOM ไม่สำเร็จ: " & ex.Message, "สร้าง BOM", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try

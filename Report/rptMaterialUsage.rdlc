@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Report xmlns="http://schemas.microsoft.com/sqlserver/reporting/2016/01/reportdefinition" xmlns:rd="http://schemas.microsoft.com/SQLServer/reporting/reportdesigner">
+  <AutoRefresh>0</AutoRefresh>
+  <DataSources>
+    <DataSource Name="dsMaterialUsageSource">
+      <ConnectionProperties>
+        <DataProvider>System.Data.DataSet</DataProvider>
+        <ConnectString>/* Local DataSet */</ConnectString>
+      </ConnectionProperties>
+      <rd:DataSourceID>f8a604a2-7a95-4ad4-95ef-9b60d9c8f041</rd:DataSourceID>
+    </DataSource>
+  </DataSources>
+  <DataSets>
+    <DataSet Name="dsMaterialUsage">
+      <Query>
+        <DataSourceName>dsMaterialUsageSource</DataSourceName>
+        <CommandText>/* Local DataTable */</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="MaterialID"><DataField>MaterialID</DataField></Field>
+        <Field Name="MaterialDetail"><DataField>MaterialDetail</DataField></Field>
+        <Field Name="UnitUse"><DataField>UnitUse</DataField></Field>
+        <Field Name="BalancePrevious"><DataField>BalancePrevious</DataField></Field>
+        <Field Name="RestQty"><DataField>RestQty</DataField></Field>
+        <Field Name="RealUse"><DataField>RealUse</DataField></Field>
+        <Field Name="UseFromBOM"><DataField>UseFromBOM</DataField></Field>
+        <Field Name="DiffFromBOM"><DataField>DiffFromBOM</DataField></Field>
+        <Field Name="PayQty"><DataField>PayQty</DataField></Field>
+        <Field Name="DiffFromPay"><DataField>DiffFromPay</DataField></Field>
+      </Fields>
+    </DataSet>
+  </DataSets>
+  <ReportSections>
+    <ReportSection>
+      <Body>
+        <ReportItems>
+          <Textbox Name="txtTitle">
+            <CanGrow>true</CanGrow>
+            <Paragraphs><Paragraph><TextRuns><TextRun><Value>ปริมาณการใช้วัตถุดิบ เดือน </Value><Style><FontFamily>Angsana New</FontFamily><FontSize>16pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun><TextRun><Value>=Parameters!pMonthTitle.Value</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>16pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs>
+            <Top>0.05in</Top><Left>0in</Left><Height>0.35in</Height><Width>10.1in</Width>
+            <Style><Border><Style>None</Style></Border></Style>
+          </Textbox>
+          <Textbox Name="txtSubTitle">
+            <CanGrow>true</CanGrow>
+            <Paragraphs><Paragraph><TextRuns><TextRun><Value>=Parameters!pBranch.Value &amp; "    " &amp; Parameters!pDocument.Value</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Left</TextAlign></Style></Paragraph></Paragraphs>
+            <Top>0.42in</Top><Left>0in</Left><Height>0.25in</Height><Width>10.1in</Width>
+            <Style><Border><Style>None</Style></Border></Style>
+          </Textbox>
+          <Tablix Name="tblMaterialUsage">
+            <TablixBody>
+              <TablixColumns>
+                <TablixColumn><Width>0.75in</Width></TablixColumn>
+                <TablixColumn><Width>2.70in</Width></TablixColumn>
+                <TablixColumn><Width>0.60in</Width></TablixColumn>
+                <TablixColumn><Width>0.85in</Width></TablixColumn>
+                <TablixColumn><Width>0.85in</Width></TablixColumn>
+                <TablixColumn><Width>0.85in</Width></TablixColumn>
+                <TablixColumn><Width>1.00in</Width></TablixColumn>
+                <TablixColumn><Width>1.00in</Width></TablixColumn>
+                <TablixColumn><Width>0.75in</Width></TablixColumn>
+                <TablixColumn><Width>0.75in</Width></TablixColumn>
+              </TablixColumns>
+              <TablixRows>
+                <TablixRow>
+                  <Height>0.38in</Height>
+                  <TablixCells>
+                    <TablixCell><CellContents><Textbox Name="hMaterialID"><Paragraphs><Paragraph><TextRuns><TextRun><Value>รหัสวัตถุดิบ</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hMaterialDetail"><Paragraphs><Paragraph><TextRuns><TextRun><Value>รายการวัตถุดิบ</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hUnit"><Paragraphs><Paragraph><TextRuns><TextRun><Value>หน่วย</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hBalance"><Paragraphs><Paragraph><TextRuns><TextRun><Value>ยกมา</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hRest"><Paragraphs><Paragraph><TextRuns><TextRun><Value>คงเหลือ</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hReal"><Paragraphs><Paragraph><TextRuns><TextRun><Value>ใช้ไป</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hBom"><Paragraphs><Paragraph><TextRuns><TextRun><Value>คิดจาก BOM ใช้</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hBomDiff"><Paragraphs><Paragraph><TextRuns><TextRun><Value>คิดจาก BOM % Diff</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hPay"><Paragraphs><Paragraph><TextRuns><TextRun><Value>ใช้</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="hPayDiff"><Paragraphs><Paragraph><TextRuns><TextRun><Value>Diff</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>10pt</FontSize><FontWeight>Bold</FontWeight></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><BackgroundColor>#000000</BackgroundColor><Color>#FFFFFF</Color><Border><Style>Solid</Style><Color>#FFFFFF</Color></Border></Style></Textbox></CellContents></TablixCell>
+                  </TablixCells>
+                </TablixRow>
+                <TablixRow>
+                  <Height>0.25in</Height>
+                  <TablixCells>
+                    <TablixCell><CellContents><Textbox Name="dMaterialID"><CanGrow>true</CanGrow><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!MaterialID.Value</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dMaterialDetail"><CanGrow>true</CanGrow><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!MaterialDetail.Value</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dUnit"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Fields!UnitUse.Value</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Center</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dBalance"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!BalancePrevious.Value,"N2")</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dRest"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!RestQty.Value,"N2")</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dReal"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!RealUse.Value,"N2")</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dBom"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!UseFromBOM.Value,"N2")</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dBomDiff"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=IIF(IsNothing(Fields!DiffFromBOM.Value),"",Format(Fields!DiffFromBOM.Value,"N2") &amp; "%")</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dPay"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!PayQty.Value,"N2")</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                    <TablixCell><CellContents><Textbox Name="dPayDiff"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Format(Fields!DiffFromPay.Value,"N2")</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>9pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Style><Border><Style>Solid</Style><Color>#808080</Color></Border></Style></Textbox></CellContents></TablixCell>
+                  </TablixCells>
+                </TablixRow>
+              </TablixRows>
+            </TablixBody>
+            <TablixColumnHierarchy>
+              <TablixMembers>
+                <TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember /><TablixMember />
+              </TablixMembers>
+            </TablixColumnHierarchy>
+            <TablixRowHierarchy>
+              <TablixMembers>
+                <TablixMember><KeepWithGroup>After</KeepWithGroup><RepeatOnNewPage>true</RepeatOnNewPage></TablixMember>
+                <TablixMember><Group Name="Details" /></TablixMember>
+              </TablixMembers>
+            </TablixRowHierarchy>
+            <DataSetName>dsMaterialUsage</DataSetName>
+            <Top>0.75in</Top><Left>0in</Left><Height>0.63in</Height><Width>10.1in</Width>
+            <Style><Border><Style>Solid</Style><Color>#555555</Color></Border></Style>
+          </Tablix>
+        </ReportItems>
+        <Height>7.2in</Height>
+        <Style><Border><Style>None</Style></Border></Style>
+      </Body>
+      <Width>10.1in</Width>
+      <Page>
+        <PageHeader><Height>0in</Height><PrintOnFirstPage>true</PrintOnFirstPage><PrintOnLastPage>true</PrintOnLastPage></PageHeader>
+        <PageFooter>
+          <Height>0.25in</Height>
+          <ReportItems><Textbox Name="txtFooter"><Paragraphs><Paragraph><TextRuns><TextRun><Value>=Parameters!pPrintDate.Value</Value><Style><FontFamily>Angsana New</FontFamily><FontSize>8pt</FontSize></Style></TextRun></TextRuns><Style><TextAlign>Right</TextAlign></Style></Paragraph></Paragraphs><Top>0in</Top><Left>0in</Left><Height>0.2in</Height><Width>10.1in</Width><Style><Border><Style>None</Style></Border></Style></Textbox></ReportItems>
+        </PageFooter>
+        <PageHeight>8.27in</PageHeight><PageWidth>11.69in</PageWidth>
+        <LeftMargin>0.3in</LeftMargin><RightMargin>0.3in</RightMargin><TopMargin>0.3in</TopMargin><BottomMargin>0.3in</BottomMargin>
+        <Style />
+      </Page>
+    </ReportSection>
+  </ReportSections>
+  <ReportParameters>
+    <ReportParameter Name="pMonthTitle"><DataType>String</DataType><Prompt>เดือน</Prompt></ReportParameter>
+    <ReportParameter Name="pBranch"><DataType>String</DataType><Prompt>สาขา</Prompt></ReportParameter>
+    <ReportParameter Name="pDocument"><DataType>String</DataType><Prompt>เอกสาร</Prompt></ReportParameter>
+    <ReportParameter Name="pPrintDate"><DataType>String</DataType><Prompt>วันที่พิมพ์</Prompt></ReportParameter>
+  </ReportParameters>
+  <Language>th-TH</Language>
+  <ConsumeContainerWhitespace>true</ConsumeContainerWhitespace>
+</Report>

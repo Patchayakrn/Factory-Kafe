@@ -148,6 +148,7 @@ Public Class fReportSellByProductGroup
         cboBranch.Items.Clear()
         cboBranch.Items.Add(AllBranches)
         Try
+            DbSchemaChecker.EnsureSupportTables()
             Using conn As SqlConnection = modVariable.OpenConnection()
                 Using cmd As New SqlCommand("SELECT BranchNumber, RTRIM(BranchName) FROM Branch ORDER BY BranchNumber", conn)
                     Using rd As SqlDataReader = cmd.ExecuteReader()
@@ -204,8 +205,13 @@ Public Class fReportSellByProductGroup
                              "SUM(CASE WHEN M.MaterialID = N'F50105' OR (RTRIM(ISNULL(M.Material_Detail,N'')) LIKE N'%ฝา%' AND RTRIM(ISNULL(M.Material_Detail,N'')) LIKE N'%โดม%') THEN ISNULL(BOM.[Use],0) ELSE 0 END) AS DomeLidPerUnit, " &
                              "SUM(CASE WHEN M.MaterialID = N'F50104' OR (RTRIM(ISNULL(M.Material_Detail,N'')) LIKE N'%ฝา%' AND RTRIM(ISNULL(M.Material_Detail,N'')) LIKE N'%เรียบ%') THEN ISNULL(BOM.[Use],0) ELSE 0 END) AS FlatLidPerUnit, " &
                              "SUM(CASE WHEN M.MaterialID = N'F50103' OR (RTRIM(ISNULL(M.Material_Detail,N'')) LIKE N'%ฝา%' AND RTRIM(ISNULL(M.Material_Detail,N'')) LIKE N'%ร้อน%') THEN ISNULL(BOM.[Use],0) ELSE 0 END) AS HotLidPerUnit " &
-                             "FROM BOM LEFT JOIN MaterialDrink M ON M.MaterialID=BOM.MaterialID " &
-                             "WHERE BOM.ProductID=RTRIM(Product.ProductCode)) CupFormula " &
+                             "FROM (SELECT TOP 1 H.BOMID FROM BOMHeader H " &
+                             "WHERE H.ProductID=RTRIM(Product.ProductCode) " &
+                             "AND Sell.CTime>=H.EffectiveFrom " &
+                             "AND (H.EffectiveTo IS NULL OR Sell.CTime<=H.EffectiveTo) " &
+                             "ORDER BY H.EffectiveFrom DESC, H.VersionNo DESC) ActiveBOM " &
+                             "INNER JOIN BOMDetail BOM ON BOM.BOMID=ActiveBOM.BOMID " &
+                             "LEFT JOIN MaterialDrink M ON M.MaterialID=BOM.MaterialID) CupFormula " &
                             "OUTER APPLY (SELECT TOP 1 1 AS PromotionFound, CASE WHEN ISNULL(D.DiscountM, 0) > 0 THEN D.DiscountM " &
                             "WHEN ISNULL(D.DiscountP, 0) > 0 THEN ISNULL(SellD.Price, ISNULL(Product.Price1, 0)) * D.DiscountP / 100 " &
                             "WHEN ISNULL(H.DiscountM, 0) > 0 THEN H.DiscountM " &

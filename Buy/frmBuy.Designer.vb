@@ -835,7 +835,7 @@ Partial Class frmBuy
         Me.btnPrint.Name = "btnPrint"
         Me.btnPrint.Size = New System.Drawing.Size(135, 46)
         Me.btnPrint.TabIndex = 6
-        Me.btnPrint.Text = "ดูรายงานย้อนหลัง"
+        Me.btnPrint.Text = "ดู/แก้ไขย้อนหลัง"
         Me.btnPrint.UseVisualStyleBackColor = False
         '
         'btnCancel

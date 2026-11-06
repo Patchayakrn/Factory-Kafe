@@ -17,7 +17,7 @@ Public NotInheritable Class DbSchemaChecker
         "Company", "Customer", "CustomerFreeCup", "Delivery", "Officer", "PMT", "PMTBranch", "PMTD",
         "Product", "ProductAlert", "ProductGroup", "ProductLocation", "ProductVolume", "Sell", "CustomerCertification",
         "SellCustomerCertified", "SellD", "SellPromotion", "SellStock", "Stock", "StockMovementReportOverride", "Supplier",
-        "MaterialUsageDocument", "MaterialUsageDocumentDetail", "StockCheck", "Transaction", "TransactionDetail", "Use_Qty",
+        "MaterialUsageDocument", "MaterialUsageDocumentDetail", "StockCheck", "BOMHeader", "BOMDetail", "Transaction", "TransactionDetail", "Use_Qty",
         "SupplierContact", "Unit"
     }
 
@@ -25,6 +25,7 @@ Public NotInheritable Class DbSchemaChecker
     Private Shared ReadOnly RequiredColumns As New Dictionary(Of String, String()) From {
         {"Officer", New String() {"Salary"}},
         {"SellCustomerCertified", New String() {"BranchNumber", "SellNumber", "CustomerNumber", "CustomerName", "PayName", "Detail", "CONumber", "CTime"}},
+        {"Sell", New String() {"CashReceived", "CashChange"}},
         {"CustomerFreeCup", New String() {"CustomerNumber", "ID", "SellNumber", "SellBranchNumber", "CupIn", "FreeCupIn", "FreeCupOut", "FreeCupAmount", "CupBalance", "FreeCupBalance", "Detail", "CTime"}},
         {"CustomerCertification", New String() {"CustomerNumber", "IsCertified", "CTime", "UTime"}},
         {"SellPromotion", New String() {"BranchNumber", "SellNumber", "Detail", "CTime"}},
@@ -96,6 +97,13 @@ Public NotInheritable Class DbSchemaChecker
                 "IF OBJECT_ID(N'dbo.SellPromotion', N'U') IS NOT NULL " &
                 "AND COL_LENGTH(N'dbo.SellPromotion', N'CTime') IS NULL " &
                 "ALTER TABLE dbo.SellPromotion ADD CTime DATETIME NOT NULL CONSTRAINT DF_SellPromotion_CTime_Auto DEFAULT GETDATE(); " &
+                 "IF OBJECT_ID(N'dbo.Sell', N'U') IS NOT NULL " &
+                 "BEGIN " &
+                 "IF COL_LENGTH(N'dbo.Sell', N'CashReceived') IS NULL " &
+                 "ALTER TABLE dbo.Sell ADD CashReceived MONEY NULL; " &
+                 "IF COL_LENGTH(N'dbo.Sell', N'CashChange') IS NULL " &
+                 "ALTER TABLE dbo.Sell ADD CashChange MONEY NULL; " &
+                 "END; " &
                 "IF OBJECT_ID(N'dbo.CustomerFreeCup', N'U') IS NOT NULL " &
                 "AND COL_LENGTH(N'dbo.CustomerFreeCup', N'FreeCupAmount') IS NULL " &
                 "ALTER TABLE dbo.CustomerFreeCup ADD FreeCupAmount DECIMAL(18,2) NOT NULL CONSTRAINT DF_CustomerFreeCup_FreeCupAmount_Auto DEFAULT 0; " &
@@ -122,6 +130,37 @@ Public NotInheritable Class DbSchemaChecker
                 "Rest_Qty DECIMAL(18,4) NOT NULL CONSTRAINT DF_StockCheck_Rest_Qty DEFAULT 0, " &
                 "CONSTRAINT PK_StockCheck PRIMARY KEY ([Year], [Month], MaterialID)) " &
                 "CREATE INDEX IX_StockCheck_Material_Period ON dbo.StockCheck(MaterialID, [Year], [Month]); " &
+                "END; " &
+                "IF OBJECT_ID(N'dbo.BOMHeader', N'U') IS NULL " &
+                "BEGIN " &
+                "CREATE TABLE dbo.BOMHeader (" &
+                "BOMID INT IDENTITY(1,1) NOT NULL CONSTRAINT PK_BOMHeader PRIMARY KEY, " &
+                "ProductID NVARCHAR(50) NOT NULL, VersionNo INT NOT NULL, " &
+                "EffectiveFrom DATETIME NOT NULL, EffectiveTo DATETIME NULL, " &
+                "Remark NVARCHAR(500) NULL, CTime DATETIME NOT NULL CONSTRAINT DF_BOMHeader_CTime DEFAULT GETDATE(), " &
+                "CONSTRAINT UQ_BOMHeader_Product_Version UNIQUE (ProductID, VersionNo)) " &
+                "CREATE INDEX IX_BOMHeader_Product_Date ON dbo.BOMHeader(ProductID, EffectiveFrom, EffectiveTo); " &
+                "END; " &
+                "IF OBJECT_ID(N'dbo.BOMDetail', N'U') IS NULL " &
+                "BEGIN " &
+                "CREATE TABLE dbo.BOMDetail (" &
+                "BOMID INT NOT NULL, MaterialID NVARCHAR(50) NOT NULL, [Use] DECIMAL(18,4) NOT NULL, " &
+                "CONSTRAINT PK_BOMDetail PRIMARY KEY (BOMID, MaterialID), " &
+                "CONSTRAINT FK_BOMDetail_BOMHeader FOREIGN KEY (BOMID) REFERENCES dbo.BOMHeader(BOMID)) " &
+                "CREATE INDEX IX_BOMDetail_Material ON dbo.BOMDetail(MaterialID); " &
+                "END; " &
+                "IF OBJECT_ID(N'dbo.BOM', N'U') IS NOT NULL " &
+                "AND OBJECT_ID(N'dbo.BOMHeader', N'U') IS NOT NULL " &
+                "AND OBJECT_ID(N'dbo.BOMDetail', N'U') IS NOT NULL " &
+                "BEGIN " &
+                "INSERT INTO dbo.BOMHeader(ProductID, VersionNo, EffectiveFrom, Remark) " &
+                "SELECT X.ProductID, 1, CAST('19000101' AS DATETIME), N'สูตรเดิมก่อนเริ่มเก็บประวัติเวอร์ชัน' " &
+                "FROM (SELECT DISTINCT RTRIM(ProductID) AS ProductID FROM dbo.BOM) X " &
+                "WHERE NOT EXISTS (SELECT 1 FROM dbo.BOMHeader H WHERE H.ProductID=X.ProductID); " &
+                "INSERT INTO dbo.BOMDetail(BOMID, MaterialID, [Use]) " &
+                "SELECT H.BOMID, RTRIM(B.MaterialID), B.[Use] " &
+                "FROM dbo.BOM B INNER JOIN dbo.BOMHeader H ON H.ProductID=RTRIM(B.ProductID) AND H.VersionNo=1 " &
+                "WHERE NOT EXISTS (SELECT 1 FROM dbo.BOMDetail D WHERE D.BOMID=H.BOMID AND D.MaterialID=RTRIM(B.MaterialID)); " &
                 "END; " &
                 "IF OBJECT_ID(N'dbo.Transaction', N'U') IS NULL " &
                 "BEGIN " &
